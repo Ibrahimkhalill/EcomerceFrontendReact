@@ -1,0 +1,80 @@
+/* nav component */
+.nav {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0 0px 0px 1px rgba(145, 141, 141, 0.5);
+
+  border-bottom: 1px solid #e5e5e5;
+  /* width: 1000%; */
+  height: 7vh;
+  margin-left: -0.5vw;
+  margin-right: -0.5vw;
+  margin-top: -0.5vw;
+  position: relative;
+}
+
+.nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav .brand {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  color: black;
+}
+
+/* .nav .brand h3 {
+  font-size: 18px;
+  line-height: 19px;
+  
+  color: black;
+} */
+
+.nav .brand img {
+  width: 4vw;
+  margin-right: 10px;
+}
+
+.account {
+  width: 50%;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 30px;
+  font-size: 1vw;
+  position: absolute;
+  right: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.account > span:last-child {
+  cursor: pointer;
+}
+
+@media only screen and (max-width: 600px) {
+  .nav .brand h3 {
+    display: none;
+  }
+}
+
+.account_icon {
+  font-size: 1.2vw;
+}
+
+.logout_section {
+  display: flex;
+  flex-direction: row;
+
+  column-gap: 0.2vw;
+}

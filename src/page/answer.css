@@ -1,0 +1,29 @@
+.score-img {
+  width: 50%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.answer_container {
+  display: flex;
+  flex-direction: row;
+  column-gap: 5vw;
+  align-items: center;
+  justify-content: center;
+  margin: 4vw;
+  margin-left: 23vw;
+}
+
+.analysis {
+  margin: 2vw;
+}
+
+.question_container_analysis {
+  background-color: aliceblue;
+  padding: 2vw;
+  padding-left: 3vw;
+}
+
+.score {
+  font-size: 1.5vw;
+}
