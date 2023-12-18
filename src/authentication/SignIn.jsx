@@ -6,9 +6,10 @@ function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(""); // Add error state
 
   const navigate = useNavigate();
+
   function getCSRFToken() {
     const csrfCookie = document.cookie
       .split("; ")
@@ -20,6 +21,7 @@ function Login() {
 
     return null;
   }
+
   async function handleSubmit(e) {
     e.preventDefault();
     try {
@@ -29,11 +31,11 @@ function Login() {
         username,
         password,
       };
-      const response = await fetch("http://127.0.0.1:8000/api/login/", {
+      const response = await fetch("https://quiz111.pythonanywhere.com/api/login/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": getCSRFToken(), // Make sure to implement getCSRFToken() to fetch the token
+          "X-CSRFToken": getCSRFToken(),
         },
         body: JSON.stringify(requestBody),
       });
@@ -49,13 +51,16 @@ function Login() {
         console.error("Login failed:", response.statusText);
         const text = await response.text();
         console.log("Response text:", text);
-        // Handle specific error cases if needed
+
+        // Set the error state to display the error message
+        setError("Username or password is Incorrect.");
       }
 
       setLoading(false);
     } catch (error) {
       console.error("An error occurred during login:", error);
-      // Handle unexpected errors
+      // Set the error state to display the error message
+      setError("An unexpected error occurred. Please try again later.");
       setLoading(false);
     }
   }

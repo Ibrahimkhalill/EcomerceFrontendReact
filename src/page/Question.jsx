@@ -4,27 +4,30 @@ import "./question.css";
 import ProgressBar from "../component/ProgressBar.jsx";
 import { useParams, useNavigate } from "react-router-dom";
 import MiniPlayer from "../component/MiniPlayer.jsx";
-
-// ...
+import { ClipLoader } from "react-spinners";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Question() {
   const { id } = useParams();
   const [questionData, setQuestionData] = useState([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isOptionSelected, setIsOptionSelected] = useState(false);
+
   const navigate = useNavigate();
-  // ...
 
   useEffect(() => {
     const fetchQuestionData = async () => {
       try {
         const result = await fetch(
-          `http://127.0.0.1:8000/api/get-question/${id}`
+          `https://quiz111.pythonanywhere.com/api/get-question/${id}`
         );
         if (!result.ok) {
           throw new Error("Network result was not ok");
         }
-
+        setLoading(false);
         const data = await result.json();
         setQuestionData(data);
 
@@ -32,12 +35,13 @@ function Question() {
         const initialOptions = data.map((question) => ({
           questionId: question.id,
           title: question.title,
-          answer: question.answer, // Include the answer field
+          answer: question.answer,
           selectedOption: null,
         }));
         setSelectedOptions(initialOptions);
       } catch (e) {
         console.error("Error fetching question data:", e);
+        setLoading(false);
       }
     };
 
@@ -48,13 +52,13 @@ function Question() {
     const questionId = questionData[currentQuestionIndex].id;
     const value = e.target.value;
 
-    // Find if the question is already in the array
+    setIsOptionSelected(true); // Set to true when an option is selected
+
     const existingQuestionIndex = selectedOptions.findIndex(
       (item) => item.questionId === questionId
     );
 
     if (existingQuestionIndex !== -1) {
-      // Update the existing question's selected option
       setSelectedOptions((prevOptions) => [
         ...prevOptions.slice(0, existingQuestionIndex),
         {
@@ -66,7 +70,6 @@ function Question() {
         ...prevOptions.slice(existingQuestionIndex + 1),
       ]);
     } else {
-      // Add the new question to the array
       setSelectedOptions((prevOptions) => [
         ...prevOptions,
         {
@@ -79,12 +82,20 @@ function Question() {
     }
   };
 
-  // ...
-
   const nextQuestion = () => {
-    setCurrentQuestionIndex((prevIndex) =>
-      Math.min(prevIndex + 1, questionData.length - 1)
-    );
+    // Check if an option is selected before allowing to proceed
+    if (isOptionSelected) {
+      setCurrentQuestionIndex((prevIndex) =>
+        Math.min(prevIndex + 1, questionData.length - 1)
+      );
+      setIsOptionSelected(false); // Reset to false for the next question
+      
+    } else {
+      // Show the warning and prevent navigation
+    
+      // Use toastify to display a warning message
+      toast.warn("Please select any option before proceeding to the next question.");
+    }
   };
 
   const prevQuestion = () => {
@@ -101,6 +112,14 @@ function Question() {
     questionData.length > 0
       ? ((currentQuestionIndex + 1) / questionData.length) * 100
       : 0;
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <ClipLoader size={50} color="#3498db" loading={loading} />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -192,11 +211,13 @@ function Question() {
             </div>
           )}
       </div>
+     
       <ProgressBar
         next={nextQuestion}
         prev={prevQuestion}
         submit={submit}
         progress={percentage}
+        isOptionSelected={isOptionSelected}
       />
       <MiniPlayer
         id={id}
@@ -206,6 +227,7 @@ function Question() {
             : ""
         }
       />
+       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </>
   );
 }

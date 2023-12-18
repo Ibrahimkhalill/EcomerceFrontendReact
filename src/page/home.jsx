@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar.jsx";
 import "./home.css";
+import { ClipLoader } from 'react-spinners';
 
 import { Link, useLocation } from "react-router-dom";
 function Home() {
@@ -14,7 +15,7 @@ function Home() {
 
     const fetchVideos = async () => {
       try {
-        const result = await fetch("http://127.0.0.1:8000/api/get-videos/");
+        const result = await fetch("https://quiz111.pythonanywhere.com/api/get-videos/");
 
         if (!result.ok) {
           throw new Error("Network result was not ok");
@@ -46,7 +47,12 @@ function Home() {
   const token = localStorage.getItem("authToken");
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="loading-container">
+       
+        <ClipLoader size={50} color="#3498db" loading={loading} />
+      </div>
+    );
   }
 
   return (
