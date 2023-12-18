@@ -47,8 +47,7 @@ body {
     font-size: 50%;
   }
   .main-option {
-  display: grid;
-  grid-template-columns: auto ;
-  row-gap: 2vw;
+  
+  row-gap: 4vw;
 }
 }
