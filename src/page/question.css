@@ -22,7 +22,7 @@ body {
 .main-option {
   display: grid;
   grid-template-columns: auto auto;
-  row-gap: 4vw;
+  row-gap: 2vw;
 }
 
 .option {
