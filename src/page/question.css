@@ -39,12 +39,12 @@ body {
 }
 @media only screen and (max-width: 600px) {
   .question_title {
-    font-size: 1.5vw;
+    font-size: 1.8vw;
   }
   .option {
     display: flex;
     align-items: center;
-    font-size: 50%;
+    font-size: 100%;
   }
   .main-option {
   
