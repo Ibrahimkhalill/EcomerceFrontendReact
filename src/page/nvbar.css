@@ -11,7 +11,7 @@
   height: 7vh;
   margin-left: -0.5vw;
   margin-right: -0.5vw;
-  margin-top: -0.5vw;
+  margin-top: -0.6vw;
   position: relative;
 }
 
@@ -45,11 +45,11 @@
 .account {
   width: 50%;
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
   justify-content: flex-end;
   align-items: center;
   margin-right: 30px;
-  font-size: 1vw;
+  font-size: 1.4vw;
   position: absolute;
   right: 0;
 }
@@ -66,10 +66,26 @@ a {
   .nav .brand h3 {
     display: none;
   }
-}
-
-.account_icon {
-  font-size: 1.2vw;
+  .nav .brand img {
+    width: 30%;
+    margin-left: -70%;
+  }
+  .nav {
+    width: 104%;
+    margin-left: -2%;
+  }
+  .account {
+    font-size: 4vw;
+  }
+  .account_icon {
+    font-size: 1.2vw;
+  }
+  .nav h2 {
+    display: none;
+  }
+  .nav {
+    margin-top: -1.6vw;
+  }
 }
 
 .logout_section {

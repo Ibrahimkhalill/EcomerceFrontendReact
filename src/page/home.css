@@ -46,13 +46,23 @@
 
 @media screen and (max-width: 600px) {
   .card-container {
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto;
   }
   .card-title {
-    font-size: 1.3vw;
+    font-size: 2.3vw;
   }
   .card-description {
-    font-size: 1vw;
+    font-size: 2vw;
+  }
+  .card {
+    width: 102%;
+    height: 100%;
+  }
+  .card img {
+    height: 20vh;
+  }
+  .account_icon {
+    font-size: 4vw;
   }
 }
 .infinite-scroll-component {
