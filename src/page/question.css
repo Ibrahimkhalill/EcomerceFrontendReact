@@ -1,3 +1,5 @@
+/* Default styles for larger screens */
+
 body {
   background-color: rgb(213, 231, 231);
 }
@@ -5,12 +7,9 @@ body {
 .question_container {
   display: flex;
   flex-direction: column;
-
   padding: 10px;
-
   margin: 1rem 0;
   margin-left: 3vw;
-
   border-radius: 4px;
 }
 
@@ -37,4 +36,26 @@ body {
 
 .option:hover {
   background-color: rgb(157, 165, 168);
+}
+
+/* Media query for smaller screens */
+
+@media screen and (max-width: 768px) {
+  .question_container {
+    margin-left: 0;
+  }
+  .question_title{
+    font-size: 2.3vw;
+  }
+
+  .main-option {
+    grid-template-columns: 1fr; /* Change to a single column grid */
+    gap: 1rem; /* Add some gap between the items */
+  }
+
+  .option {
+    width: 100%; /* Make the options take full width */
+    font-size: 14px; /* Adjust the font size for smaller screens */
+    font-family: "Your New Font", sans-serif; /* Change to your desired font family */
+  }
 }

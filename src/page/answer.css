@@ -10,7 +10,7 @@
   column-gap: 5vw;
   align-items: center;
   justify-content: center;
-  margin: 4vw;
+  margin-top: 4vw;
   margin-left: 23vw;
 }
 
@@ -26,4 +26,9 @@
 
 .score {
   font-size: 1.5vw;
+}
+@media screen and (max-width: 768px) {
+  .score{
+    font-size: 3vw;
+  }
 }
