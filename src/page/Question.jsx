@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Navbar from "./Navbar.jsx";
-import "./question.css";
-import ProgressBar from "../component/ProgressBar.jsx";
-import { useParams, useNavigate } from "react-router-dom";
-import MiniPlayer from "../component/MiniPlayer.jsx";
+import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import MiniPlayer from "../component/MiniPlayer.jsx";
+import ProgressBar from "../component/ProgressBar.jsx";
+import Navbar from "./Navbar.jsx";
+import "./question.css";
 
 function Question() {
   const { id } = useParams();
@@ -89,12 +89,13 @@ function Question() {
         Math.min(prevIndex + 1, questionData.length - 1)
       );
       setIsOptionSelected(false); // Reset to false for the next question
-      
     } else {
       // Show the warning and prevent navigation
-    
+
       // Use toastify to display a warning message
-      toast.warn("Please select any option before proceeding to the next question.");
+      toast.warn(
+        "Please select any option before proceeding to the next question."
+      );
     }
   };
 
@@ -211,7 +212,7 @@ function Question() {
             </div>
           )}
       </div>
-     
+
       <ProgressBar
         next={nextQuestion}
         prev={prevQuestion}
@@ -227,7 +228,7 @@ function Question() {
             : ""
         }
       />
-       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </>
   );
 }
