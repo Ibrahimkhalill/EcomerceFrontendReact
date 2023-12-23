@@ -23,6 +23,13 @@
   padding: 2vw;
   padding-left: 3vw;
 }
+.option.correct {
+  background-color: green;
+}
+
+.option.wrong {
+  background-color: green;
+}
 
 .score {
   font-size: 1.5vw;
@@ -30,5 +37,11 @@
 @media screen and (max-width: 768px) {
   .score{
     font-size: 3vw;
+  }
+  .question_container_analysis {
+    display: flex;
+    flex-direction: column;
+    row-gap: 4vw;
+   
   }
 }

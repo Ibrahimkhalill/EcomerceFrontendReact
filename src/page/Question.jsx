@@ -104,7 +104,7 @@ function Question() {
   };
 
   const submit = async () => {
-    console.log("Submitted Data:", selectedOptions);
+    
     // Navigate to the next page or handle as needed
     navigate(`/result/${id}`, { state: { selectedOptions, questionData } });
   };

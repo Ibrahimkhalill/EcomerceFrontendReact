@@ -15,7 +15,7 @@ function Answer() {
   const [totalscore, setTotalscore] = useState(0);
 
   useEffect(() => {
-    console.log("result");
+  
     let score = 0;
 
     if (submittedData) {
@@ -66,11 +66,11 @@ function Answer() {
         </div>
       </div>
       <div className="analysis">
-        <h1>Question Analysis</h1>
+        <h1>Answer Analysis</h1>
         <div className="question_container_analysis">
           {questionData.length > 0 &&
             questionData.map((question, index) => (
-              <div className="question_title" key={index}>
+              <div className="question_title_answer" key={index}>
                 <h3>{question.title}</h3>
 
                 <div className="main-option">
@@ -80,13 +80,11 @@ function Answer() {
                         className="option"
                         style={{
                           backgroundColor:
-                            submittedData[index].selectedOption ===
-                            questionData[index].option1
-                              ? questionData[index].option1 ===
-                                questionData[index].answer
-                                ? "green"
-                                : "red"
-                              : "transparent",
+                            submittedData[index].answer === questionData[index].option1
+                              ? "green" // Display green if answer matches option2
+                              : submittedData[index].selectedOption === questionData[index].option1
+                              ? "red" // Display red if selected option does not match option2
+                              : "transparent", // Otherwise, transparent
                         }}
                       >
                         <input
@@ -108,13 +106,11 @@ function Answer() {
                         className="option"
                         style={{
                           backgroundColor:
-                            submittedData[index].selectedOption ===
-                            questionData[index].option2
-                              ? questionData[index].option2 ===
-                                questionData[index].answer
-                                ? "green"
-                                : "red"
-                              : "transparent",
+                            submittedData[index].answer === questionData[index].option2
+                              ? "green" // Display green if answer matches option2
+                              : submittedData[index].selectedOption === questionData[index].option2
+                              ? "red" // Display red if selected option does not match option2
+                              : "transparent", // Otherwise, transparent
                         }}
                       >
                         <input
@@ -136,13 +132,11 @@ function Answer() {
                         className="option"
                         style={{
                           backgroundColor:
-                            submittedData[index].selectedOption ===
-                            questionData[index].option3
-                              ? questionData[index].option3 ===
-                                questionData[index].answer
-                                ? "green"
-                                : "red"
-                              : "transparent",
+                            submittedData[index].answer === questionData[index].option3
+                              ? "green" // Display green if answer matches option2
+                              : submittedData[index].selectedOption === questionData[index].option3
+                              ? "red" // Display red if selected option does not match option2
+                              : "transparent", // Otherwise, transparent
                         }}
                       >
                         <input
@@ -164,13 +158,11 @@ function Answer() {
                         className="option"
                         style={{
                           backgroundColor:
-                            submittedData[index].selectedOption ===
-                            questionData[index].option4
-                              ? questionData[index].option4 ===
-                                questionData[index].answer
-                                ? "green"
-                                : "red"
-                              : "transparent",
+                            submittedData[index].answer === questionData[index].option4
+                              ? "green" // Display green if answer matches option2
+                              : submittedData[index].selectedOption === questionData[index].option4
+                              ? "red" // Display red if selected option does not match option2
+                              : "transparent", // Otherwise, transparent
                         }}
                       >
                         <input

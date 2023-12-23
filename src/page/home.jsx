@@ -26,10 +26,9 @@ function Home() {
         if (isMounted) {
           setVideos(data);
           setLoading(false);
-          console.log("Fetched data:", data);
+          
         }
       } catch (e) {
-        console.error("Error fetching data:", e);
         setLoading(false);
       }
     };
