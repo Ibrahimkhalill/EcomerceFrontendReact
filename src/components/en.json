@@ -1,0 +1,19 @@
+{
+    "login": "Login",
+    "signup": "Signup",
+    "category":"Categories",
+    "just":"Just for you",
+    "search":"Search in product",
+    "load":"Load More",
+    "filter":"Filters",
+    "price":"Price",
+    "Min":"Min",
+    "Max":"Max",
+    "apply":"Apply",
+    "rating":"Rating",
+    "item":"items found for",
+    "promotion":"Promotion & Services",
+    "brand":"Brand",
+    "categorys":"Category",
+    "Warranty":"Warranty Period"
+  }
