@@ -35,7 +35,7 @@ const LanguageSelector = () => {
         )}
         {showLanguageList && (
           <div className="language-list">
-            <div style={{ fontSize: ".9vw", marginBottom: ".5vw" }}>
+            <div style={{ fontSize: ".9vw", marginBottom: ".5vw", color:"black" }}>
               Select Language
             </div>
             <ul>
@@ -49,7 +49,7 @@ const LanguageSelector = () => {
                   id="en"
                   checked={selectedLanguage === "en"}
                 />
-                <span>English</span>
+                <span style={{color:"black"}}>English</span>
               </li>
               <li
                 onClick={() => changeLanguage("bn")}
@@ -61,7 +61,7 @@ const LanguageSelector = () => {
                   id="bn"
                   checked={selectedLanguage === "bn"}
                 />
-                <span>বাংলা</span>
+                <span style={{color:"black"}}>বাংলা</span>
               </li>
             </ul>
           </div>

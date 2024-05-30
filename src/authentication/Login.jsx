@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
 import "./login.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import Navbar from "../page/Navbar";
 import { Modal } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons"; // Import the correct icon
+import { RotatingLines } from "react-loader-spinner";
+import {
+  ExclamationCircleOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+import { FiEye } from "react-icons/fi";
+import { PiEyeClosed } from "react-icons/pi";
+import { ImGooglePlus } from "react-icons/im";
+import AuthenticationNavbar from "./AuthenticationNavbar";
 
 const LoginForm = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
-
+  const location = useLocation();
+  const message = location.state?.message;
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
@@ -22,8 +31,9 @@ const LoginForm = () => {
   const [usernameerror, setUsernameerror] = useState("");
   const [passwordfocused, setPasswordFocused] = useState(false);
   const [passworderror, setPassworderror] = useState("");
+  const [success, setSuccess] = useState("");
   const pathname = sessionStorage.getItem("redirectFrom");
-  console.log(pathname);
+
   const navigate = useNavigate();
 
   function getCSRFToken() {
@@ -48,6 +58,13 @@ const LoginForm = () => {
       return () => clearTimeout(timerId);
     }
   }, [errorModalVisible]);
+
+  useEffect(() => {
+    if (message) {
+      setSuccess(message);
+      setErrorModalVisible(true);
+    }
+  }, [message]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -163,9 +180,7 @@ const LoginForm = () => {
               localStorage.setItem("authToken", data.token);
             } else {
               console.error("Login failed:", googleresponse.statusText);
-              const text = await googleresponse.text();
-              console.log("Response text:", text);
-
+    
               setError("Username or password is incorrect.");
               setErrorModalVisible(true);
             }
@@ -190,36 +205,63 @@ const LoginForm = () => {
 
   return (
     <div className="sub_page">
-      <Navbar />
-      <Modal
-        title={
-          <div>
-            <ExclamationCircleOutlined
-              style={{ color: "#f5222d", marginRight: 8 }}
+      <div className="d-lg-none">
+        <AuthenticationNavbar />
+      </div>
+      <div className="d-none d-lg-block">
+        <Navbar />
+      </div>
+      {errorModalVisible && (
+        <Modal
+          className="modal_autehntication"
+          title={
+            <div>
+              {success ? (
+                <CheckCircleOutlined
+                  style={{ color: "green", marginRight: 8 }}
+                />
+              ) : (
+                <ExclamationCircleOutlined
+                  style={{ color: "#f5222d", marginRight: 8 }}
+                />
+              )}
+
+              {success ? "Success" : "Error"}
+            </div>
+          }
+          onOk={null}
+          footer={null}
+          width={300}
+          height={100}
+
+          // Set footer to null to hide buttons
+        >
+          <p>{success ? success : error}</p>
+        </Modal>
+      )}
+      <div className="login_container">
+        <div className="loading">
+          {loading && (
+            <RotatingLines
+              strokeColor="#f57224"
+              strokeWidth="5"
+              animationDuration="0.75"
+              width="64"
+              visible={true}
             />
-            Error
-          </div>
-        }
-        visible={errorModalVisible}
-        onOk={null}
-        onCancel={null}
-        footer={null}
-        width={300}
-        height={100}
-        // Set footer to null to hide buttons
-      >
-        <p>{error}</p>
-      </Modal>
-      <div className="container">
-        <div className="header_brand_login">Welcome to MIK ! Please login.</div>
+          )}
+        </div>
+        <div className="header_brand_login">
+          Welcome to Tanni Fashion House! Please login.
+        </div>
         <div className="content_login">
           <div className="first_column">
             <div className="field">
-              <label>Username*</label>
+              <label>Email*</label>
               <input
                 type="text"
                 name="username"
-                placeholder="username"
+                placeholder="Enter your email"
                 onChange={(event) => {
                   setUsername(event.target.value);
                   setUsernameerror("");
@@ -233,11 +275,13 @@ const LoginForm = () => {
                     : usernamefocused
                     ? "black"
                     : "",
-                  border: "1px solid",
+                  border: "1px solid white",
                 }}
               />
               {usernameerror && (
-                <div style={{ color: "red" }}>{usernameerror}</div>
+                <div style={{ color: "red", fontSize: "12px" }}>
+                  {usernameerror}
+                </div>
               )}
             </div>
             <div className="field">
@@ -260,23 +304,36 @@ const LoginForm = () => {
                     : passwordfocused
                     ? "black"
                     : "",
-                  border: "1px solid",
+                  border: "1px solid white",
                 }}
               />
               {passworderror && (
-                <div style={{ color: "red" }}>{passworderror}</div>
+                <div style={{ color: "red", fontSize: "12px" }}>
+                  {passworderror}
+                </div>
               )}
 
               <span className="show" onClick={togglePasswordVisibility}>
-                {passwordVisible ? "HIDE" : "SHOW"}
+                {passwordVisible ? (
+                  <FiEye style={{ fontSize: "1.2rem" }} />
+                ) : (
+                  <PiEyeClosed style={{ fontSize: "1.3rem" }} />
+                )}
               </span>
             </div>
+            <Link className="forget_password" to={"/user/forget-password"}>
+              Forget Password?
+            </Link>
             {/* {error && <p className="error">{error}</p>} */}
           </div>
           <div className="button_login">
             <label
-              className="Google"
-              style={{ background: "#2691d9", border: "none" }}
+              className="normal_login"
+              style={{
+                background: "#2691d9",
+                border: "none",
+                cursor: "pointer",
+              }}
               htmlFor="login"
             >
               <input
@@ -296,13 +353,13 @@ const LoginForm = () => {
 
             <label className="Google" htmlFor="google">
               <i className="fab fa-google me-2">
+                <ImGooglePlus className="google_icon" />
                 <input
                   type="button"
                   id="google"
                   style={{
                     border: "none",
                     background: "none",
-                    marginLeft: "1vw",
                     outline: "none",
                   }}
                   onClick={login}

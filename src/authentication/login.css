@@ -1,25 +1,44 @@
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700|Poppins:400,500&display=swap');
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700|Poppins:400,500&display=swap");
 
-.bg-img{
+.bg-img {
   background: white;
   display: flex;
   justify-content: center;
   height: 10vw;
   margin-top: 1vw;
 }
-.bg-img:after{
+.bg-img:after {
   position: absolute;
-  content: '';
+  content: "";
   top: 10vw;
   left: 0;
   height: 100%;
   width: 100%;
   /* background: rgba(255, 255, 255, 0.7); */
 }
-.content_login{
+.login_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 100px 0px;
+  flex-direction: column;
+  row-gap: 15px;
+}
+
+.forget_container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 100px 0px;
+  flex-direction: column;
+  row-gap: 15px;
+}
+
+.content_login {
   position: relative;
-  margin-top: 20vw;
-  left: 50%;
+
   display: flex;
   flex-direction: row;
   text-align: center;
@@ -28,88 +47,110 @@
   padding: 2vw 1vw;
   width: 43vw;
   height: 35vh;
-  transform: translate(-50%,-50%);
-  box-shadow: -1px 4px 28px 0px rgba(0,0,0,0.75);
+  /* transform: translate(-50%, -50%); */
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  border-radius: 5px;
 }
-.content header{
+.reset_content_login {
+  position: relative;
+
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  justify-content: center;
+  column-gap: 3vw;
+  padding: 2vw 1vw;
+  width: 43vw;
+  height: 35vh;
+  /* transform: translate(-50%, -50%); */
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+    rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  border-radius: 5px;
+}
+.content header {
   color: rgb(0, 0, 0);
   font-size: 33px;
   font-weight: 600;
   margin: 0 0 35px 0;
-  font-family: 'Montserrat',sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
-.header_brand_login{
-  position: absolute;
-  top:13vw;
-  left: 28.6vw;  
+.header_brand_login {
   font-size: 1.5vw;
 }
-.field{
+.field {
   position: relative;
-  height: 14vh;
+  height: 13vh;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  
-}
-.field label{
-  width: 40px;
-}
-.field input{
-  height: 5vh;
-  width: 20vw;
-  outline: none;
-  font-size: 16px;
-  font-family: 'Poppins',sans-serif;
 }
 
-.space{
+.field input {
+  height: 5vh;
+  width: 20vw;
+  font-size: 16px;
+  font-family: "Poppins", sans-serif;
+  border: 1px solid gray;
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+  border-radius: 5px;
+  outline-color: gray;
+}
+.forget_password {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+.space {
   margin-top: 16px;
 }
-.button_login{
+.button_login {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   row-gap: 1vw;
   margin-top: 3vw;
-  
 }
-.show{
+.show {
   position: absolute;
+  bottom: 30px;
   right: 13px;
   font-size: 13px;
   font-weight: 700;
   color: #222;
   display: none;
   cursor: pointer;
-  font-family: 'Montserrat',sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
-.pass-key:valid ~ .show{
+.pass-key:valid ~ .show {
   display: block;
 }
-.pass{
+.pass-key {
+  position: relative;
+}
+.pass {
   text-align: left;
   margin: 10px 0;
 }
 .error {
-    background-color: #ffc0c7;
-    padding: 0.6rem 1.2rem;
-    margin-top: 10px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-  }
-.pass a{
+  background-color: #ffc0c7;
+  padding: 0.6rem 1.2rem;
+  margin-top: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+.pass a {
   color: rgb(255, 255, 255);
   text-decoration: none;
-  font-family: 'Poppins',sans-serif;
+  font-family: "Poppins", sans-serif;
 }
-.pass:hover a{
+.pass:hover a {
   text-decoration: underline;
 }
-.field input[type="submit"]{
+.field input[type="submit"] {
   background: #3498db;
   border: 1px solid #2691d9;
   color: rgb(17, 17, 17);
@@ -117,65 +158,254 @@
   letter-spacing: 1px;
   font-weight: 600;
   cursor: pointer;
-  font-family: 'Montserrat',sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
-.field input[type="submit"]:hover{
+.field input[type="submit"]:hover {
   background: #2691d9;
 }
 
-.links{
+.links {
   display: flex;
   cursor: pointer;
   color: rgb(19, 19, 19);
   margin: 0 0 20px 0;
 }
-.facebook,.Google{
+.facebook,
+.normal_login,
+.Google {
   width: 100%;
   height: 45px;
   line-height: 45px;
-  margin-left: 10px;
 }
-.facebook{
+.normal_login {
+  background: #2691d9 !important;
+  font-size: 18px;
+  border-radius: 5px;
+}
+.facebook {
   margin-left: 0;
-  background: #4267B2;
+  background: #4267b2;
   border: 1px solid #3e61a8;
 }
-.Google{
-  background: #E1306C;
-  border: 1px solid #df2060;
+.Google {
+  background: #d9534f !important;
+  border: 1px solid #d9534f !important;
   cursor: pointer;
-  font-size: 1.2vw;
+  font-size: 1.1vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-.facebook:hover{
+.google_icon {
+  font-size: 1.5rem;
+  color: white;
+  margin-right: 10px;
+}
+.facebook:hover {
   background: #3e61a8;
 }
-.instagram:hover{
+.instagram:hover {
   background: #df2060;
 }
-.links i{
+.links i {
   font-size: 17px;
 }
-i span{
+i span {
   margin-left: 8px;
   font-weight: 500;
   letter-spacing: 1px;
   font-size: 16px;
-  font-family: 'Poppins',sans-serif;
+  font-family: "Poppins", sans-serif;
 }
-.signup{
+.signup {
   font-size: 15px;
   color: rgb(0, 0, 0);
-  font-family: 'Poppins',sans-serif;
+  font-family: "Poppins", sans-serif;
 }
-.signup a{
+.signup a {
   color: #3498db;
   text-decoration: none;
 }
-.signup a:hover{
+.signup a:hover {
   text-decoration: underline;
 }
-.first_column{
-  
-  
+#google {
+  color: white;
+}
+#login {
+  color: white;
+}
+.float-right {
+  margin-left: 190px;
+  text-decoration: none !important;
+}
+.reset-box {
+  width: 40vw;
+}
+.reset-box input {
+  width: 90%;
+}
+.reset-box .my_password_reset {
+  width: 90%;
+}
+.my_password_reset {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  row-gap: 1px;
+  margin-bottom: 10px;
+  margin-left: 20px;
+  height: 12vh;
+}
+.my_password_reset input {
+  width: 100%;
+  height: 5vh;
+  outline: none;
+  border: 1px solid rgb(173, 173, 173);
+  box-shadow: rgba(0, 0, 0, 0.05) 0px 0px 0px 1px;
+  border-radius: 5px;
+  padding-left: 10px;
+}
+
+.my_password_reset button {
+  width: 30%;
+  border: none;
+  background-color: #f57224;
+  height: 7vh;
+  border-radius: 5px;
+  color: white;
+}
+@media (max-width: 448px) {
+  .login_container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 40px 0px;
+  }
+  .forget_container {
+    padding: 160px 0px;
+  }
+  .header_brand_login {
+    font-size: 20px;
+    width: 90%;
+  }
+  .content_login {
+    /* top: 250px;
+    left: 45%; */
+    width: 90%;
+    height: auto;
+    flex-direction: column;
+    padding: 10px 20px;
+  }
+  .reset_content_login {
+    width: 90%;
+    height: auto;
+    text-align: left;
+    flex-direction: column;
+    padding: 10px 20px;
+  }
+  .field {
+    height: 13vh;
+  }
+  .field label {
+    font-size: 1.2rem;
+  }
+  .field input {
+    height: 5vh;
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+    font-family: "Poppins", sans-serif;
+  }
+  .show {
+    position: absolute;
+    bottom: 40px;
+    right: 13px;
+    font-size: 13px;
+  }
+  .Google {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-left: 0px;
+  }
+  .normal_login {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-left: 0px;
+  }
+  .reset-box {
+    width: 100%;
+  }
+  .reset-box input {
+    width: 100% !important;
+  }
+  .my_password_reset {
+    margin-left: 0px;
+  }
+  .reset-box .my_password_reset {
+    width: 100%;
+  }
+  .show_password {
+    top: 44px !important;
+  }
+  .responsive_authentication_navbar {
+    font-size: 16px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05), 0 0.5px 0 rgba(0, 0, 0, 0.09);
+    height: 48px;
+    font-weight: 400;
+    line-height: 48px;
+    background: -webkit-linear-gradient(
+      292.66deg,
+      #f85606 60.36%,
+      #f87a06 94.93%
+    );
+    background: linear-gradient(157.34deg, #f85606 60.36%, #f87a06 94.93%);
+    color: #fff;
+    display: flex;
+    padding-left: 10px;
+  }
+  .mod_tabs_header {
+    width: 100%;
+    height: 48px;
+    background: #fff;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    align-items: center;
+    /* justify-content: space-evenly; */
+    -webkit-box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+    margin-bottom: 8px;
+  }
+  .list_header_auten {
+    text-align: center;
+    line-height: 48px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #9e9e9e;
+    width: 100%;
+  }
+  .active_link_authen {
+    text-align: center;
+    line-height: 48px;
+    font-size: 15px;
+    font-weight: 600;
+    width: 100%;
+    border-bottom: 5px solid #f57224;
+    color: #f57224;
+  }
+  .active_link_authen button {
+    border: none;
+    width: 100%;
+  }
+
+  .list_header_auten button {
+    border: none;
+    width: 100%;
+  }
+  .my_password_reset button {
+    width: 100%;
+  }
 }

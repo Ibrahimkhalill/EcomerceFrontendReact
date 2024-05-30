@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import logo from "../images/logo.png";
+import logo from "../images/logoTanni-removebg-preview.png";
 import cart from "../images/cart.png";
 import { CgProfile } from "react-icons/cg";
 import { useEffect, useState } from "react";
@@ -8,17 +8,23 @@ import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
 import "../components/i18n";
 import bn from "../images/Bangladesh.png";
+import { FaUser } from "react-icons/fa";
+import { IoBagHandleOutline } from "react-icons/io5";
+import { AiOutlineLogout } from "react-icons/ai";
+import { SlHeart } from "react-icons/sl";
+import { useCart } from "../components/CartContext";
+import { IoCartOutline } from "react-icons/io5";
 
-function CollapsibleExample({ cartItems, serachName }) {
+function Navbar({ Items, serachName }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-
+  const { cartItems } = useCart();
   const isLoggedIn =
     localStorage.getItem("authToken") && localStorage.getItem("username");
-  const username = localStorage.getItem("username");
 
   const [q, setQ] = useState("");
-
+  const [user, setUser] = useState([]);
+  const username = user?.username;
   useEffect(() => {
     setQ(serachName);
   }, [serachName]);
@@ -82,55 +88,129 @@ function CollapsibleExample({ cartItems, serachName }) {
             Authorization: `Token ${authToken}`,
           },
         });
-        const data = await response.json();
-        const { cartItems } = data;
-        setCartItems(cartItems);
+
+        if (response.ok) {
+          const data = await response.json();
+          const { cartItems, user } = data;
+          setUser(user);
+          setCartItems(cartItems);
+        } else {
+          console.error("Error fetching data:", response.statusText);
+          const text = await response.text();
+          console.log("Response text:", text);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
+    if (authToken) {
+      fetchCartItems();
+    }
+  }, [authToken]);
 
-    fetchCartItems();
-  },);
+  const [sidebar, setsidebar] = useState(false);
 
+  const w3_open = () => {
+    setsidebar(!sidebar);
+  };
 
+  // function w3_close() {
+  //   document.getElementById("mySidebar").style.display = "none";
+  // }
   return (
-    <div className="hero_area">
-      <header className="header_section">
-        <div className="container">
-          <nav className="navbar navbar-expand-lg custom_nav-container ">
-            <Link className="navbar-brand" to="/">
-              <img width="150" src={logo} alt="#" />
-            </Link>
+    <>
+      {sidebar && (
+        <div class="w3-sidebar w3-bar-block w3-border-right " id="mySidebar">
+          <button onClick={w3_open} class="w3-bar-item w3-large">
+            Close &times;
+          </button>
+          <Link class="w3-bar-item w3-button">Link 1</Link>
+          <Link class="w3-bar-item w3-button">Link 2</Link>
+          <Link class="w3-bar-item w3-button">Link 3</Link>
+        </div>
+      )}
+      <div className="hero_area">
+        <header className="header_section">
+          <div className="">
+            <nav className="navbar navbar-expand-lg custom_nav-container ">
+              <div>
+                {/* <button
+                  style={{ border: "none", color:"white" }}
+                  className="   w3-xlarge"
+                  onClick={w3_open}
+                >
+                  ☰
+                </button> */}
+                <Link className="navbar-brand" to="/">
+                  <img width="150" src={logo} alt="#" />
+                </Link>
+              </div>
 
-            <div
-              className="collapse navbar-collapse"
-              id="navbarSupportedContent"
-            >
-              <ul className="navbar-nav">
-                <li className="form-inlines">
-                  <div className="serach_input">
-                    <input
-                      type="text"
-                      placeholder={t("search")}
-                      aria-label="Search"
-                      size="50"
-                      value={q}
-                      onChange={(e) => setQ(e.target.value)}
-                    />
-                    <button className=" " type="submit" onClick={searchProduct}>
-                      <LuSearch style={{ fontSize: "1.2vw" }} />
-                    </button>
-                  </div>
-                </li>
-                {isLoggedIn ? (
-                  // Render logout button if user is logged in
-                  <>
-                    <li style={{ width: "8vw", marginRight: "-1vw" }}>
-                      <CgProfile style={{ fontSize: "1.2vw" }} />
-                      {username}
-                    </li>
-                    <li style={{ display: "flex", alignItems: "center" }}>
+              <Link
+                to="/cart"
+                className="d-lg-none"
+                style={{ border: "none", color: "white", background: "none" }}
+              >
+                <IoCartOutline
+                  className=" position-relative"
+                  size={30}
+                  color="white"
+                />
+                <span className=" cart_total_responsive">
+                  {Items || cartitems}
+                </span>
+              </Link>
+              <div
+                className="collapse navbar-collapse"
+                id="navbarSupportedContent"
+              >
+                <ul className="navbar-nav">
+                  <li className="form-inlines">
+                    <div className="serach_input">
+                      <input
+                        type="text"
+                        placeholder={t("search")}
+                        aria-label="Search"
+                        size="50"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                      />
+                      <button
+                        className=" "
+                        type="submit"
+                        onClick={searchProduct}
+                      >
+                        <LuSearch style={{ fontSize: "1.2vw" }} />
+                      </button>
+                    </div>
+                  </li>
+                  {isLoggedIn ? (
+                    // Render logout button if user is logged in
+                    <>
+                      <li className="dropdown">
+                        <div className="dropbtn">
+                          <CgProfile style={{ fontSize: "1.2vw" }} />
+                          {username}
+                          <div> Order & Account</div>
+                          <div className="dropdown-content">
+                            <Link to="/account/my-profile">
+                              <FaUser size={20} /> My Profile
+                            </Link>
+                            <Link to="/account/my-order">
+                              <IoBagHandleOutline size={20} /> My Order
+                            </Link>
+                            <Link to="/account/my-wishlist">
+                              <SlHeart size={18} />
+                              My Wishlist
+                            </Link>
+                            <Link onClick={handleLogout}>
+                              <AiOutlineLogout size={20} />
+                              Logout
+                            </Link>
+                          </div>
+                        </div>
+                      </li>
+                      {/* <li style={{ display: "flex", alignItems: "center" }}>
                       <button
                         title="logout"
                         className="btn"
@@ -138,54 +218,80 @@ function CollapsibleExample({ cartItems, serachName }) {
                       >
                         Logout
                       </button>
-                    </li>
+                    </li> */}
+                      <li className="language ml-2">
+                        {/* English  */}
+                        <img src={bn} width={20} alt="" /> <LanguageSelector />
+                      </li>
+                      <li className="position-relative">
+                        <Link to="/cart" style={{ border: "none" }}>
+                          <IoCartOutline
+                            className=" ml-2 "
+                            size={30}
+                            color="white"
+                          />
+                          <span className="cart_item_navbar">
+                            {cartItems || cartitems}
+                          </span>
+                        </Link>
+                      </li>
+                    </>
+                  ) : (
+                    // Render login and signup buttons if user is not logged in
+                    <>
+                      <li>
+                        <Link
+                          style={{ color: "white" }}
+                          className="btn  ml-2 "
+                          to="/login"
+                        >
+                          {t("login")}
+                        </Link>
+                      </li>
+                      <li>
+                        <Link
+                          style={{ color: "white" }}
+                          className="btn  "
+                          to="/signup"
+                        >
+                          {t("signup")}
+                        </Link>
+                      </li>
+                      <li className="language ml-2">
+                        {/* English  */}
+                        <img src={bn} width={20} alt="" /> <LanguageSelector />
+                      </li>
+                      <li>
+                        <Link to="/cart" style={{ border: "none" }}>
+                          <img className="cart-icon" src={cart} alt="" />
+                        </Link>
+                      </li>
+                    </>
+                  )}
+                </ul>
+              </div>
+            </nav>
+          </div>
+        </header>
+      </div>
 
-                    <li className="cart-image">
-                      <Link
-                        to="/cart"
-                        style={{ border: "none", background: "white" }}
-                      >
-                        <img className="cart-icon" src={cart} alt="" />
-                        <span className="cart-total">
-                          {cartItems?.cartitems || cartitems}
-                        </span>
-                      </Link>
-                    </li>
-                  </>
-                ) : (
-                  // Render login and signup buttons if user is not logged in
-                  <>
-                    <li>
-                      <Link className="btn ml-2 " to="/login">
-                        {t("login")}
-                      </Link>
-                    </li>
-                    <li>
-                      <Link className="btn  " to="/signup">
-                        {t("signup")}
-                      </Link>
-                    </li>
-                    <li className="language ml-2">
-                      {/* English  */}
-                      <img src={bn} width={20} alt="" /> <LanguageSelector />
-                    </li>
-                    <li>
-                      <Link
-                        to="/cart"
-                        style={{ border: "none", background: "white" }}
-                      >
-                        <img className="cart-icon" src={cart} alt="" />
-                      </Link>
-                    </li>
-                  </>
-                )}
-              </ul>
-            </div>
-          </nav>
+      <div className="responsive_search  d-lg-none">
+        <div className="search_res_input">
+          <input
+            type="text"
+            placeholder={t("search")}
+            aria-label="Search"
+            size="50"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <button className=" " type="submit" onClick={searchProduct}>
+            <LuSearch size={23} />
+          </button>
         </div>
-      </header>
-    </div>
+      </div>
+    </>
   );
 }
 
-export default CollapsibleExample;
+export default Navbar;

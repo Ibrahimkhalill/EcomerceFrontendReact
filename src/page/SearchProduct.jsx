@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../css/style.css";
 import "../css/bootstrap.css";
 import "../css/responsive.css";
@@ -18,9 +18,11 @@ import { IoGridSharp } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoIosArrowForward } from "react-icons/io";
+import { IoIosClose } from "react-icons/io";
 
 import ExperienceIsuue from "../components/ExperienceIsuue";
-const SearchProduct = () => {
+import FooterResponsive from "../components/FooterResponsive";
+const SubcategoryFilterProduct = () => {
   const [cartitems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
@@ -28,6 +30,18 @@ const SearchProduct = () => {
   const [gridview, setGridview] = useState(true);
   const [listview, setListview] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [minPrice, setMinPrice] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(null);
+  const [filterData, setFilterData] = useState([]);
+  const [searchData, setSearchData] = useState([]);
+  const [brand, setBrand] = useState([]);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [selectBrand, setSelectBrand] = useState("");
+  const [isChecked, setIsChecked] = useState(false);
+  const [subcategory, setSubCategory] = useState([]);
+  const [subcategoryData, setSubCategoryData] = useState([]);
+  const [categoryName, setCategoryName] = useState("");
+  const navigate = useNavigate();
   const itemsPerPage = 14;
   const q = queryParams.get("q");
   const { t } = useTranslation();
@@ -37,7 +51,7 @@ const SearchProduct = () => {
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
-    sessionStorage.removeItem("redirectFrom")
+    sessionStorage.removeItem("redirectFrom");
     const fetchCartItems = async () => {
       try {
         setLoading(true);
@@ -49,7 +63,28 @@ const SearchProduct = () => {
         });
         const data = await response.json();
         const { cartItems } = data;
+
         setCartItems(cartItems);
+        setSearchData(searchResults);
+        setFilterData(searchResults);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    const fetchBrand = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://127.0.0.1:8000/api/get-brand/", {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json",
+          },
+        });
+        const data = await response.json();
+        setSubCategory(data.subcategory);
+        setBrand(data.brand);
+        console.log(data.brand);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -57,7 +92,23 @@ const SearchProduct = () => {
     };
 
     fetchCartItems();
-  }, [authToken]);
+    fetchBrand();
+  }, [authToken, searchResults]);
+
+  useEffect(() => {
+    const filter =
+      subcategory && subcategory.find((data) => data.subcategory_name === q);
+    setCategoryName(filter?.category?.category_name);
+  }, [q, subcategory]);
+
+  useEffect(() => {
+    const filter =
+      subcategory &&
+      subcategory.filter(
+        (data) => data.category?.category_name === categoryName
+      );
+    setSubCategoryData(filter);
+  }, [categoryName, q, subcategory]);
 
   const imageArray1 = Array.from({ length: 5 });
   const imageArray2 = Array.from({ length: 4 });
@@ -66,7 +117,6 @@ const SearchProduct = () => {
   const handlelistview = (e) => {
     setListview(true);
     setGridview(false);
-    console.log("hit me");
   };
 
   const handlegridview = () => {
@@ -77,9 +127,9 @@ const SearchProduct = () => {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems =
-    searchResults && searchResults.slice(indexOfFirstItem, indexOfLastItem);
+    filterData && filterData.slice(indexOfFirstItem, indexOfLastItem);
 
-  const totalPages = Math.ceil(searchResults.length / itemsPerPage);
+  const totalPages = Math.ceil(filterData.length / itemsPerPage);
 
   const handlePageChange = (newPage) => {
     // Scroll to the top of the page with smooth behavior
@@ -160,151 +210,304 @@ const SearchProduct = () => {
   };
 
   if (performance.navigation.type === 1) {
+    // Reloaded/refreshed the page
     window.onload = function () {
+      // Scroll to the bottom of the page
       window.scrollTo(0, document.body.scrollHeight);
     };
   }
 
+  const [visualMinPrice, setVisualMinPrice] = useState(null);
+  const [visualMaxPrice, setVisualMaxPrice] = useState(null);
+
+  const handleApplyPrice = () => {
+    if (maxPrice && minPrice) {
+      if (selectBrand) {
+        const filter = searchData.filter(
+          (data) =>
+            data.price >= minPrice &&
+            data.price <= maxPrice &&
+            data.brand?.name === selectBrand
+        );
+        setVisualMinPrice(minPrice);
+        setVisualMaxPrice(maxPrice);
+        setFilterData(filter);
+        setFilterVisible(true);
+        return;
+      }
+      const filter = searchData.filter(
+        (data) => data.price >= minPrice && data.price <= maxPrice
+      );
+      setVisualMinPrice(minPrice);
+      setVisualMaxPrice(maxPrice);
+      setFilterData(filter);
+      setFilterVisible(true);
+      return;
+    } else if (maxPrice) {
+      if (selectBrand) {
+        const filter = searchData.filter(
+          (data) => data.price <= maxPrice && data.brand?.name === selectBrand
+        );
+        setVisualMaxPrice(maxPrice);
+        setFilterData(filter);
+        setFilterVisible(true);
+        return;
+      }
+      const filter = searchData.filter((data) => data.price <= maxPrice);
+      setVisualMaxPrice(maxPrice);
+      setFilterData(filter);
+      setFilterVisible(true);
+      return;
+    } else if (minPrice) {
+      if (selectBrand) {
+        const filter = searchData.filter(
+          (data) => data.price >= minPrice && data.brand?.name === selectBrand
+        );
+        setVisualMaxPrice(maxPrice);
+        setFilterData(filter);
+        setFilterVisible(true);
+        return;
+      }
+      const filter = searchData.filter((data) => data.price >= minPrice);
+      setVisualMinPrice(minPrice);
+      setFilterData(filter);
+      setFilterVisible(true);
+      return;
+    } else {
+      return;
+    }
+  };
+  const handlecancelPrice = () => {
+    setMaxPrice("");
+    setMinPrice("");
+    setVisualMaxPrice("");
+    setVisualMinPrice("");
+    if (!selectBrand) {
+      setFilterVisible(false);
+      setFilterData(searchResults);
+    }
+  };
+  const handleclikbrand = (name) => {
+    if (selectBrand === name) {
+      setSelectBrand("");
+      setIsChecked(false);
+      setFilterData(searchResults);
+      handleApplyPrice();
+      return;
+    } else if (minPrice || maxPrice) {
+      const filter = searchData.filter(
+        (data) =>
+          data.brand?.name === name &&
+          data.price >= minPrice &&
+          data.price <= maxPrice
+      );
+      setFilterData(filter);
+      setIsChecked(true);
+      setSelectBrand(name);
+      setFilterVisible(true);
+    } else if (maxPrice) {
+      const filter = searchData.filter(
+        (data) => data.brand?.name === name && data.price <= maxPrice
+      );
+      setFilterData(filter);
+      setIsChecked(true);
+      setSelectBrand(name);
+      setFilterVisible(true);
+    } else if (minPrice) {
+      const filter = searchData.filter(
+        (data) => data.brand?.name === name && data.price >= minPrice
+      );
+      setFilterData(filter);
+      setIsChecked(true);
+      setSelectBrand(name);
+      setFilterVisible(true);
+    } else {
+      const filter = searchData.filter((data) => data.brand?.name === name);
+      setFilterData(filter);
+      setIsChecked(true);
+      setSelectBrand(name);
+      setFilterVisible(true);
+    }
+  };
+
+  const cancelAll = () => {
+    setFilterData(searchResults);
+    handlecancelPrice();
+    setFilterVisible(false);
+    setSelectBrand("");
+  };
+  const handleSubcategoryClick = async (subcategory) => {
+    try {
+      console.log("c", subcategory);
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/get-subcategory-product/",
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(subcategory.id),
+        }
+      );
+      const data = await response.json();
+      const { results } = data;
+      navigate(`/filter-product/?q=${subcategory.subcategory_name}`, {
+        state: { result: results },
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
   return (
-    <div className="sub_page">
-      <Navbar serachName={q} />
-      <section className="product_section ">
-        {loading ? (
-          <Loader />
-        ) : (
-          <div className="full_div_filter_product">
-            <div className="filter_product">
-              <div style={{ fontSize: "1.5vw", fontWeight: "bold" }}>
-                {t("filter")}
+    <>
+      <div className="sub_page">
+        <Navbar />
+        <section className="product_section ">
+          {loading ? (
+            <Loader />
+          ) : (
+            <>
+              <div className="filter_header">
+                Home /<span style={{ color: "#f85606" }}> Search result</span>
               </div>
-              {searchResults.length > 0 && (
-                <>
-                  <div
-                    style={{ fontSize: "18px", fontFamily: "Roboto-Regular;" }}
-                  >
-                    {t("promotion")}
+              <div className="full_div_filter_product">
+                <div className="filter_product">
+                  <div style={{ fontSize: "1.5vw", fontWeight: "bold" }}>
+                    {t("filter")}
                   </div>
-                  <hr />
-                  <div className="promotion_row">
-                    <div className="promotion_item">
-                      <img width={20} src={FreeDelivery} alt="" />
-                      <span>Free Delivery</span>
+
+                  <>
+                    <div
+                      style={{
+                        fontSize: "18px",
+                        fontFamily: "Roboto-Regular;",
+                      }}
+                    >
+                      {t("promotion")}
                     </div>
-                    <div className="promotion_item">
-                      <img width={22} src={BestPrice} alt="" />
-                      <span style={{ marginRight: ".5vw" }}>
-                        Best Price Guaranteed
-                      </span>
+                    <hr />
+                    <div className="promotion_row">
+                      <div className="promotion_item">
+                        <img width={20} src={FreeDelivery} alt="" />
+                        <span>Free Delivery</span>
+                      </div>
+                      <div className="promotion_item">
+                        <img width={22} src={BestPrice} alt="" />
+                        <span style={{ marginRight: ".5vw" }}>
+                          Best Price Guaranteed
+                        </span>
+                      </div>
+                      <div className="promotion_item">
+                        <img
+                          width={20}
+                          style={{ marginBottom: ".4vw" }}
+                          src={Brand}
+                          alt=""
+                        />
+                        <span>Authentic Brands</span>
+                      </div>
+                      <div className="promotion_item">
+                        <img width={20} src={CashOnDelivery} alt="" />
+                        <span>Cash On Delivery</span>
+                      </div>
                     </div>
-                    <div className="promotion_item">
-                      <img
-                        width={20}
-                        style={{ marginBottom: ".4vw" }}
-                        src={Brand}
-                        alt=""
+                    <div
+                      style={{
+                        fontSize: "18px",
+                        marginTop: "1vw",
+                        fontFamily: "Roboto-Regular;",
+                      }}
+                    >
+                      {t("price")}
+                    </div>
+                    <hr />
+                    <div className="price_filter">
+                      <input
+                        placeholder={t("Min")}
+                        value={minPrice}
+                        onChange={(e) => setMinPrice(e.target.value)}
+                        type="number"
                       />
-                      <span>Authentic Brands</span>
+                      <span>-</span>
+                      <input
+                        placeholder={t("Max")}
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(e.target.value)}
+                        type="number"
+                      />
+                      <button onClick={handleApplyPrice}>{t("apply")}</button>
                     </div>
-                    <div className="promotion_item">
-                      <img width={20} src={CashOnDelivery} alt="" />
-                      <span>Cash On Delivery</span>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      marginTop: "1vw",
-                      fontFamily: "Roboto-Regular;",
-                    }}
-                  >
-                    {t("brand")}
-                  </div>
+                    {brand.length > 0 && filterData.length > 0 && (
+                      <>
+                        <div
+                          style={{
+                            fontSize: "18px",
+                            marginTop: "1vw",
+                            fontFamily: "Roboto-Regular;",
+                          }}
+                        >
+                          {t("brand")}
+                        </div>
 
-                  <hr />
-                  <div className="promotion_row_category">
-                    <div className="promotion_item_category">
-                      <label class="containers">
-                        <input type="checkbox" />
-                        <span class="checkmark"></span>
-                      </label>
-                      <span style={{ marginTop: ".5vw" }}>Mohanaz</span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <label class="containers">
-                        <input type="checkbox" />
-                        <span class="checkmark"></span>
-                      </label>
-                      <span style={{ marginTop: ".5vw" }}>Alvina</span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <label class="containers">
-                        <input type="checkbox" />
-                        <span class="checkmark"></span>
-                      </label>
-                      <span style={{ marginTop: ".5vw" }}>Usha Fasion</span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <label class="containers">
-                        <input type="checkbox" />
-                        <span class="checkmark"></span>
-                      </label>
-                      <span style={{ marginTop: ".5vw" }}>Nilima </span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <label class="containers">
-                        <input type="checkbox" />
-                        <span class="checkmark"></span>
-                      </label>
-                      <span style={{ marginTop: ".5vw" }}>Easy</span>
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "18px",
-                      marginTop: "1vw",
-                      fontFamily: "Roboto-Regular;",
-                    }}
-                  >
-                    {t("categorys")}
-                  </div>
+                        <hr />
+                      </>
+                    )}
+                    {filterData.length > 0 && (
+                      <>
+                        <div className="promotion_row_category">
+                          {brand &&
+                            brand.map((item) => (
+                              <div className="promotion_item_category">
+                                <label
+                                  class="containers"
+                                  htmlFor={`checkbox-${item.name}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    id={`checkbox-${item.name}`}
+                                    checked={
+                                      item.name === selectBrand ? isChecked : ""
+                                    }
+                                    onChange={() => handleclikbrand(item.name)}
+                                  />
+                                  <span class="checkmark"></span>
+                                </label>
+                                <label htmlFor={`checkbox-${item.name}`}>
+                                  {item.name}
+                                </label>
+                              </div>
+                            ))}
+                        </div>
+                        {subcategoryData.length > 0 && (
+                          <>
+                            <div
+                              style={{
+                                fontSize: "18px",
+                                marginTop: "1vw",
+                                fontFamily: "Roboto-Regular;",
+                              }}
+                            >
+                              {t("categorys")}
+                            </div>
 
-                  <hr />
-                  <div className="promotion_row_category">
-                    <div className="promotion_item_category">
-                      <span>Sarees</span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <span>Shalawar Kameez</span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <span>Kurti</span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <span>Party Wear </span>
-                    </div>
-                    <div className="promotion_item_category">
-                      <span>Palazoo Pants & Culottes</span>
-                    </div>
-                  </div>
-                </>
-              )}
-              <div
-                style={{
-                  fontSize: "18px",
-                  marginTop: "1vw",
-                  fontFamily: "Roboto-Regular;",
-                }}
-              >
-                {t("price")}
-              </div>
-              <hr />
-              <div className="price_filter">
-                <input placeholder={t("Min")} type="number" />
-                <span>-</span>
-                <input placeholder={t("Max")} type="number" />
-                <button>{t("apply")}</button>
-              </div>
-              <div
+                            <hr />
+                          </>
+                        )}
+                        <div className="promotion_row_category">
+                          {subcategoryData.map((data) => (
+                            <div
+                              className="promotion_item_category"
+                              onClick={() => handleSubcategoryClick(data)}
+                            >
+                              <span>{data.subcategory_name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+
+                  {/* <div
                 style={{
                   fontSize: "18px",
                   marginTop: "2vw",
@@ -390,10 +593,10 @@ const SearchProduct = () => {
                     & up
                   </span>
                 </div>
-              </div>
-              {searchResults.length > 0 && (
-                <>
-                  <div
+              </div> */}
+                  {filterData.length > 0 && (
+                    <>
+                      {/* <div
                     style={{
                       fontSize: "18px",
                       marginTop: "2vw",
@@ -401,9 +604,9 @@ const SearchProduct = () => {
                     }}
                   >
                     {t("Warranty")}
-                  </div>
-                  <hr />
-                  <div className="promotion_row_category">
+                  </div> */}
+                      {/* <hr /> */}
+                      {/* <div className="promotion_row_category">
                     <div className="promotion_item_category">
                       <label class="containers">
                         <input type="checkbox" />
@@ -453,170 +656,215 @@ const SearchProduct = () => {
                       </label>
                       <span style={{ marginTop: ".5vw" }}>6 Month</span>
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <div>
-              <div className="item_header">
+                  </div> */}
+                    </>
+                  )}
+                </div>
                 <div>
-                  {searchResults.length ? searchResults.length : 0} {t("item")}{" "}
-                  <span style={{ color: "rgb(248, 86, 6)" }}>"{q}"</span>
-                </div>
-                <div className="view_item">
-                  <span style={{ color: "gray" }}>View:</span>
-                  <button onClick={handlegridview}>
-                    <IoGridSharp style={{ fontSize: "1.5vw" }} />
-                  </button>
-                  <button onClick={handlelistview}>
-                    <FaListUl style={{ fontSize: "1.5vw", color: "gray" }} />
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ width: "80.3vw", marginLeft: ".5vw" }}>
-                {" "}
-                <hr />
-              </div>
-              <div className="container_filter_product">
-                {searchResults.length > 0 ? (
-                  <>
-                    {gridview && (
-                      <div className="main_box">
-                        {currentItems.map((product) => (
-                          <Link
-                            key={product.id}
-                            style={{ textDecoration: "none", color: "black" }}
-                            to={`/products/${product.id}?productId=${product.id}`}
-                          >
-                            <div className="box">
-                              <div className="img-box">
-                                <img
-                                  src={`http://localhost:8000${product.cover_image}?amp=1`}
-                                  alt={product.name}
-                                />
-                              </div>
-
-                              <div className="detail-box">
-                                <div className="title">{product.name}</div>
-                                <div className="price_item">
-                                  {" "}
-                                  <span style={{ fontSize: "1.8vw" }}>
-                                    ৳
-                                  </span>{" "}
-                                  {product.price}
-                                </div>
-
-                                <div>
-                                  {imageArray1.map((_, index) => (
-                                    <img
-                                      style={{ height: ".8vw" }}
-                                      key={index}
-                                      alt=""
-                                      src={Star}
-                                    />
-                                  ))}
-
-                                  <span
-                                    style={{
-                                      fontSize: ".7vw",
-                                      marginLeft: ".5vw",
-                                    }}
-                                  >
-                                    (0)
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    {listview && (
-                      <div className="list_main_box">
-                        {currentItems.map((product) => (
-                          <Link
-                            key={product.id}
-                            style={{ textDecoration: "none", color: "black" }}
-                            to={`/products/${product.id}?productId=${product.id}`}
-                          >
-                            <div className="list_box">
-                              <div className="list_img_box">
-                                <img
-                                  src={`http://localhost:8000${product.cover_image}?amp=1`}
-                                  alt={product.name}
-                                />
-                              </div>
-                              <div className="list_detail-box">
-                                <div className="list_title">{product.name}</div>
-                                <div className="list_price_item">
-                                  {" "}
-                                  <span style={{ fontSize: "1.8vw" }}>
-                                    ৳
-                                  </span>{" "}
-                                  {product.price}
-                                </div>
-                                <div>
-                                  {imageArray1.map((_, index) => (
-                                    <img
-                                      style={{ height: ".8vw" }}
-                                      key={index}
-                                      alt=""
-                                      src={Star}
-                                    />
-                                  ))}
-
-                                  <span
-                                    style={{
-                                      fontSize: ".7vw",
-                                      marginLeft: ".5vw",
-                                    }}
-                                  >
-                                    (0)
-                                  </span>
-                                </div>
-                                <ul class="b">
-                                  <li>Produt Type: Traditional Wear</li>
-                                  <li>Color : Black</li>
-                                  <li>Gender : Women</li>
-                                  <li>Brand : No Brand</li>
-                                </ul>
-                              </div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    <div className="last_element">
-                      <div>
-                        <ExperienceIsuue />
-                      </div>
-
-                      <div className="pagination-buttons">
-                        {renderPaginationButtons()}
-                      </div>
+                  <div className="item_header">
+                    <div>
+                      {filterData.length ? filterData.length : 0} {t("item")}{" "}
+                      <span style={{ color: "rgb(248, 86, 6)" }}>"{q}"</span>
                     </div>
-                  </>
-                ) : (
-                  <>
+                    <div className="view_item">
+                      <span style={{ color: "gray" }}>View:</span>
+                      <button onClick={handlegridview}>
+                        <IoGridSharp style={{ fontSize: "1.5vw" }} />
+                      </button>
+                      <button onClick={handlelistview}>
+                        <FaListUl
+                          style={{ fontSize: "1.5vw", color: "gray" }}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    className="hr_tag"
+                    style={{ width: "80.3vw", marginLeft: ".5vw" }}
+                  >
                     <hr />
-                    <div className="serach_result">
-                      <div className="search_resut_title">Search No Result</div>
-                      <div className="search_resut_des">
-                        We're sorry. We cannot find any matches for your search
-                        term.
-                      </div>
+                  </div>
+                  {filterVisible && (
+                    <div className="main_div_filter">
+                      {(visualMaxPrice || visualMinPrice) && (
+                        <div className="filter_data">
+                          Price : {visualMinPrice}-{visualMaxPrice}{" "}
+                          <IoIosClose
+                            onClick={handlecancelPrice}
+                            color="black"
+                            cursor={"pointer"}
+                            size={21}
+                          />
+                        </div>
+                      )}
+                      {selectBrand && (
+                        <div className="filter_data">
+                          Brand : {selectBrand}{" "}
+                          <IoIosClose
+                            color="black"
+                            cursor={"pointer"}
+                            size={21}
+                            onClick={() => handleclikbrand(selectBrand)}
+                          />
+                        </div>
+                      )}
+                      {(visualMaxPrice || visualMaxPrice || selectBrand) && (
+                        <div
+                          className="clear_button"
+                          onClick={() => cancelAll()}
+                        >
+                          Clear all
+                        </div>
+                      )}
                     </div>
-                  </>
-                )}
+                  )}
+                  <div className="container_filter_product">
+                    {filterData.length > 0 ? (
+                      <>
+                        {gridview && (
+                          <div className="main_box">
+                            {currentItems.map((product) => (
+                              <Link
+                                key={product.id}
+                                style={{
+                                  textDecoration: "none",
+                                  color: "black",
+                                }}
+                                to={`/products/${product.id}?productId=${product.id}`}
+                              >
+                                <div className="box">
+                                  <div className="img-box">
+                                    <img
+                                      src={`http://localhost:8000${product.cover_image}?amp=1`}
+                                      alt={product.name}
+                                    />
+                                  </div>
+
+                                  <div className="detail-box">
+                                    <div className="title">{product.name}</div>
+                                    <div className="price_item">
+                                      {" "}
+                                      <span style={{ fontSize: "1.8vw" }}>
+                                        ৳
+                                      </span>{" "}
+                                      {product.price}
+                                    </div>
+
+                                    <div>
+                                      <button className="order-now-button">
+                                        Order Now
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                        {listview && (
+                          <div className="list_main_box">
+                            {currentItems.map((product) => (
+                              <Link
+                                key={product.id}
+                                style={{
+                                  textDecoration: "none",
+                                  color: "black",
+                                }}
+                                to={`/products/${product.id}?productId=${product.id}`}
+                              >
+                                <div className="list_box">
+                                  <div className="list_img_box">
+                                    <img
+                                      src={`http://localhost:8000${product.cover_image}`}
+                                      alt={product.name}
+                                    />
+                                  </div>
+                                  <div className="list_detail-box">
+                                    <div className="list_title">
+                                      {product.name}
+                                    </div>
+                                    <div className="list_price_item">
+                                      {" "}
+                                      <span style={{ fontSize: "1.8vw" }}>
+                                        ৳
+                                      </span>{" "}
+                                      {product.price}
+                                    </div>
+                                    {/* <div>
+                                      {imageArray1.map((_, index) => (
+                                        <img
+                                          style={{ height: ".8vw" }}
+                                          key={index}
+                                          alt=""
+                                          src={Star}
+                                        />
+                                      ))}
+
+                                      <span
+                                        style={{
+                                          fontSize: ".7vw",
+                                          marginLeft: ".5vw",
+                                        }}
+                                      >
+                                        (0)
+                                      </span>
+                                    </div> */}
+                                    <ul class="b">
+                                      <li>Produt Type:{q}</li>
+                                      {/* <li>Color : Black</li> */}
+                                      <li>Gender : Women</li>
+                                      <li>
+                                        Brand :{" "}
+                                        {product.brand?.name
+                                          ? product.brand.name
+                                          : "No Brand"}{" "}
+                                      </li>
+                                    </ul>
+                                    <button className="order-now-button list_view_order_button">
+                                      Order Now
+                                    </button>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                        <div className="last_element">
+                          <div>
+                            <ExperienceIsuue />
+                          </div>
+
+                          <div className="pagination-buttons">
+                            {renderPaginationButtons()}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <hr />
+                        <div className="serach_result">
+                          <div className="search_resut_title">
+                            Search No Result
+                          </div>
+                          <div className="search_resut_des">
+                            We're sorry. We cannot find any matches for your
+                            search term.
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
-      </section>
-      <Footer />
-    </div>
+            </>
+          )}
+        </section>
+        <Footer />
+      </div>
+      <FooterResponsive />
+    </>
   );
 };
 
-export default SearchProduct;
+export default SubcategoryFilterProduct;
