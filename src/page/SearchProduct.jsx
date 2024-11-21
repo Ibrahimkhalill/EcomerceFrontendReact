@@ -23,7 +23,6 @@ import { IoIosClose } from "react-icons/io";
 import ExperienceIsuue from "../components/ExperienceIsuue";
 import FooterResponsive from "../components/FooterResponsive";
 const SubcategoryFilterProduct = () => {
-  const [cartitems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -41,6 +40,7 @@ const SubcategoryFilterProduct = () => {
   const [subcategory, setSubCategory] = useState([]);
   const [subcategoryData, setSubCategoryData] = useState([]);
   const [categoryName, setCategoryName] = useState("");
+  const [varintData, setVarinatData] = useState([]);
   const navigate = useNavigate();
   const itemsPerPage = 14;
   const q = queryParams.get("q");
@@ -52,21 +52,18 @@ const SubcategoryFilterProduct = () => {
 
   useEffect(() => {
     sessionStorage.removeItem("redirectFrom");
-    const fetchCartItems = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Token ${authToken}`,
-          },
-        });
-        const data = await response.json();
-        const { cartItems } = data;
 
-        setCartItems(cartItems);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/get-products/`
+        );
+        const data = await response.json();
+        const { variant } = data;
         setSearchData(searchResults);
         setFilterData(searchResults);
+        setVarinatData(variant);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -75,12 +72,15 @@ const SubcategoryFilterProduct = () => {
     const fetchBrand = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://127.0.0.1:8000/api/get-brand/", {
-          method: "GET",
-          headers: {
-            "Content-type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/get-brand/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setSubCategory(data.subcategory);
         setBrand(data.brand);
@@ -91,8 +91,8 @@ const SubcategoryFilterProduct = () => {
       }
     };
 
-    fetchCartItems();
     fetchBrand();
+    fetchData();
   }, [authToken, searchResults]);
 
   useEffect(() => {
@@ -141,6 +141,15 @@ const SubcategoryFilterProduct = () => {
     // fetchContent(newPage);
   };
 
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+  
   const renderPaginationButtons = () => {
     const buttons = [];
     buttons.push(
@@ -220,64 +229,30 @@ const SubcategoryFilterProduct = () => {
   const [visualMinPrice, setVisualMinPrice] = useState(null);
   const [visualMaxPrice, setVisualMaxPrice] = useState(null);
 
-  const handleApplyPrice = () => {
-    if (maxPrice && minPrice) {
-      if (selectBrand) {
-        const filter = searchData.filter(
-          (data) =>
-            data.price >= minPrice &&
-            data.price <= maxPrice &&
-            data.brand?.name === selectBrand
-        );
-        setVisualMinPrice(minPrice);
-        setVisualMaxPrice(maxPrice);
-        setFilterData(filter);
-        setFilterVisible(true);
-        return;
-      }
-      const filter = searchData.filter(
-        (data) => data.price >= minPrice && data.price <= maxPrice
-      );
-      setVisualMinPrice(minPrice);
-      setVisualMaxPrice(maxPrice);
-      setFilterData(filter);
-      setFilterVisible(true);
-      return;
-    } else if (maxPrice) {
-      if (selectBrand) {
-        const filter = searchData.filter(
-          (data) => data.price <= maxPrice && data.brand?.name === selectBrand
-        );
-        setVisualMaxPrice(maxPrice);
-        setFilterData(filter);
-        setFilterVisible(true);
-        return;
-      }
-      const filter = searchData.filter((data) => data.price <= maxPrice);
-      setVisualMaxPrice(maxPrice);
-      setFilterData(filter);
-      setFilterVisible(true);
-      return;
-    } else if (minPrice) {
-      if (selectBrand) {
-        const filter = searchData.filter(
-          (data) => data.price >= minPrice && data.brand?.name === selectBrand
-        );
-        setVisualMaxPrice(maxPrice);
-        setFilterData(filter);
-        setFilterVisible(true);
-        return;
-      }
-      const filter = searchData.filter((data) => data.price >= minPrice);
-      setVisualMinPrice(minPrice);
-      setFilterData(filter);
-      setFilterVisible(true);
-      return;
-    } else {
-      return;
-    }
+  // Helper Function
+  const filterDataByPriceAndBrand = (min, max, brand) => {
+    return searchData.filter((data) => {
+      const price = handlePrice(data.id);
+      const matchesMinPrice = min ? price >= min : true;
+      const matchesMaxPrice = max ? price <= max : true;
+      const matchesBrand = brand ? data.brand?.name === brand : true;
+      return matchesMinPrice && matchesMaxPrice && matchesBrand;
+    });
   };
-  const handlecancelPrice = () => {
+
+  // Apply Price Filter
+  const handleApplyPrice = () => {
+    if (!minPrice && !maxPrice) return;
+
+    const filter = filterDataByPriceAndBrand(minPrice, maxPrice, selectBrand);
+    setVisualMinPrice(minPrice || null);
+    setVisualMaxPrice(maxPrice || null);
+    setFilterData(filter);
+    setFilterVisible(true);
+  };
+
+  // Cancel Price Filter
+  const handleCancelPrice = () => {
     setMaxPrice("");
     setMinPrice("");
     setVisualMaxPrice("");
@@ -287,52 +262,29 @@ const SubcategoryFilterProduct = () => {
       setFilterData(searchResults);
     }
   };
-  const handleclikbrand = (name) => {
+
+  // Handle Brand Selection
+  const handleClickBrand = (name) => {
     if (selectBrand === name) {
+      // Deselect brand
       setSelectBrand("");
       setIsChecked(false);
       setFilterData(searchResults);
       handleApplyPrice();
       return;
-    } else if (minPrice || maxPrice) {
-      const filter = searchData.filter(
-        (data) =>
-          data.brand?.name === name &&
-          data.price >= minPrice &&
-          data.price <= maxPrice
-      );
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
-    } else if (maxPrice) {
-      const filter = searchData.filter(
-        (data) => data.brand?.name === name && data.price <= maxPrice
-      );
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
-    } else if (minPrice) {
-      const filter = searchData.filter(
-        (data) => data.brand?.name === name && data.price >= minPrice
-      );
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
-    } else {
-      const filter = searchData.filter((data) => data.brand?.name === name);
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
     }
+
+    // Filter by brand, considering prices if applicable
+    const filter = filterDataByPriceAndBrand(minPrice, maxPrice, name);
+    setFilterData(filter);
+    setIsChecked(true);
+    setSelectBrand(name);
+    setFilterVisible(true);
   };
 
   const cancelAll = () => {
     setFilterData(searchResults);
-    handlecancelPrice();
+    handleCancelPrice();
     setFilterVisible(false);
     setSelectBrand("");
   };
@@ -340,7 +292,7 @@ const SubcategoryFilterProduct = () => {
     try {
       console.log("c", subcategory);
       const response = await fetch(
-        "http://127.0.0.1:8000/api/get-subcategory-product/",
+        `${process.env.REACT_APP_API_KEY}/api/get-subcategory-product/`,
         {
           method: "POST",
           headers: {
@@ -358,156 +310,151 @@ const SubcategoryFilterProduct = () => {
       console.error("Error fetching data:", error);
     }
   };
+  const calculateDiscount = (product) => {
+    if (product.discount) {
+      const price = handlePrice(product.id);
+      const discountAmount =
+        (parseFloat(price) * parseFloat(product?.discount)) / 100;
+      const discountedPrice = price - discountAmount;
+      return Math.round(discountedPrice);
+    }
+  };
+  const handlePrice = (id) => {
+    const data = varintData.filter((item) => item.product?.id == id);
+    return data[0]?.price;
+  };
+
   return (
     <>
       <div className="sub_page">
-        <Navbar />
+        <Navbar serachName={q} />
         <section className="product_section ">
-          {loading ? (
-            <Loader />
-          ) : (
-            <>
-              <div className="filter_header">
-                Home /<span style={{ color: "#f85606" }}> Search result</span>
-              </div>
-              <div className="full_div_filter_product">
-                <div className="filter_product">
-                  <div style={{ fontSize: "1.5vw", fontWeight: "bold" }}>
-                    {t("filter")}
+          <>
+            <div className="filter_header">
+              Home /<span style={{ color: "#f85606" }}> Search result</span>
+            </div>
+            <div className="full_div_filter_product">
+              <div className="filter_product">
+                <div style={{ fontSize: "1.5vw", fontWeight: "bold" }}>
+                  {t("filter")}
+                </div>
+
+                <>
+                  <div
+                    style={{
+                      fontSize: "18px",
+                      fontFamily: "Roboto-Regular;",
+                    }}
+                  >
+                    {t("promotion")}
                   </div>
-
-                  <>
-                    <div
-                      style={{
-                        fontSize: "18px",
-                        fontFamily: "Roboto-Regular;",
-                      }}
-                    >
-                      {t("promotion")}
+                  <hr />
+                  <div className="promotion_row">
+                    <div className="promotion_item">
+                      <img width={20} src={FreeDelivery} alt="" />
+                      <span>Free Delivery</span>
                     </div>
-                    <hr />
-                    <div className="promotion_row">
-                      <div className="promotion_item">
-                        <img width={20} src={FreeDelivery} alt="" />
-                        <span>Free Delivery</span>
-                      </div>
-                      <div className="promotion_item">
-                        <img width={22} src={BestPrice} alt="" />
-                        <span style={{ marginRight: ".5vw" }}>
-                          Best Price Guaranteed
-                        </span>
-                      </div>
-                      <div className="promotion_item">
-                        <img
-                          width={20}
-                          style={{ marginBottom: ".4vw" }}
-                          src={Brand}
-                          alt=""
+                    <div className="promotion_item">
+                      <img width={22} src={BestPrice} alt="" />
+                      <span style={{ marginRight: ".5vw" }}>
+                        Best Price Guaranteed
+                      </span>
+                    </div>
+                    <div className="promotion_item">
+                      <img
+                        width={20}
+                        style={{ marginBottom: ".4vw" }}
+                        src={Brand}
+                        alt=""
+                      />
+                      <span>Authentic Brands</span>
+                    </div>
+                    <div className="promotion_item">
+                      <img width={20} src={CashOnDelivery} alt="" />
+                      <span>Cash On Delivery</span>
+                    </div>
+                  </div>
+                  {searchResults.length > 0 && (
+                    <>
+                      {/* Price Filter */}
+                      <div className="filter-title">{t("price")}</div>
+                      <hr />
+                      <div className="price_filter">
+                        <input
+                          placeholder={t("Min")}
+                          value={minPrice}
+                          onChange={(e) => setMinPrice(e.target.value)}
+                          type="number"
                         />
-                        <span>Authentic Brands</span>
+                        <span>-</span>
+                        <input
+                          placeholder={t("Max")}
+                          value={maxPrice}
+                          onChange={(e) => setMaxPrice(e.target.value)}
+                          type="number"
+                        />
+                        <button onClick={handleApplyPrice}>{t("apply")}</button>
                       </div>
-                      <div className="promotion_item">
-                        <img width={20} src={CashOnDelivery} alt="" />
-                        <span>Cash On Delivery</span>
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "18px",
-                        marginTop: "1vw",
-                        fontFamily: "Roboto-Regular;",
-                      }}
-                    >
-                      {t("price")}
-                    </div>
-                    <hr />
-                    <div className="price_filter">
-                      <input
-                        placeholder={t("Min")}
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                        type="number"
-                      />
-                      <span>-</span>
-                      <input
-                        placeholder={t("Max")}
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                        type="number"
-                      />
-                      <button onClick={handleApplyPrice}>{t("apply")}</button>
-                    </div>
-                    {brand.length > 0 && filterData.length > 0 && (
-                      <>
-                        <div
-                          style={{
-                            fontSize: "18px",
-                            marginTop: "1vw",
-                            fontFamily: "Roboto-Regular;",
-                          }}
-                        >
-                          {t("brand")}
-                        </div>
 
-                        <hr />
-                      </>
-                    )}
-                    {filterData.length > 0 && (
-                      <>
-                        <div className="promotion_row_category">
-                          {brand &&
-                            brand.map((item) => (
-                              <div className="promotion_item_category">
+                      {/* Brand Filter */}
+                      {brand.length > 0 && (
+                        <>
+                          <div className="filter-title">{t("brand")}</div>
+                          <hr />
+                          <div className="promotion_row_category">
+                            {brand.map((item) => (
+                              <div
+                                className="promotion_item_category"
+                                key={item.name}
+                              >
                                 <label
-                                  class="containers"
+                                  className="containers"
                                   htmlFor={`checkbox-${item.name}`}
                                 >
                                   <input
                                     type="checkbox"
                                     id={`checkbox-${item.name}`}
                                     checked={
-                                      item.name === selectBrand ? isChecked : ""
+                                      item.name === selectBrand
+                                        ? isChecked
+                                        : false
                                     }
-                                    onChange={() => handleclikbrand(item.name)}
+                                    onChange={() => handleClickBrand(item.name)}
                                   />
-                                  <span class="checkmark"></span>
+                                  <span className="checkmark"></span>
                                 </label>
                                 <label htmlFor={`checkbox-${item.name}`}>
                                   {item.name}
                                 </label>
                               </div>
                             ))}
-                        </div>
-                        {subcategoryData.length > 0 && (
-                          <>
-                            <div
-                              style={{
-                                fontSize: "18px",
-                                marginTop: "1vw",
-                                fontFamily: "Roboto-Regular;",
-                              }}
-                            >
-                              {t("categorys")}
-                            </div>
+                          </div>
+                        </>
+                      )}
 
-                            <hr />
-                          </>
-                        )}
-                        <div className="promotion_row_category">
-                          {subcategoryData.map((data) => (
-                            <div
-                              className="promotion_item_category"
-                              onClick={() => handleSubcategoryClick(data)}
-                            >
-                              <span>{data.subcategory_name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </>
+                      {/* Subcategory Filter */}
+                      {subcategoryData.length > 0 && (
+                        <>
+                          <div className="filter-title">{t("categorys")}</div>
+                          <hr />
+                          <div className="promotion_row_category">
+                            {subcategoryData.map((data) => (
+                              <div
+                                className="promotion_item_category"
+                                onClick={() => handleSubcategoryClick(data)}
+                                key={data.subcategory_name}
+                              >
+                                <span>{data.subcategory_name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
 
-                  {/* <div
+                {/* <div
                 style={{
                   fontSize: "18px",
                   marginTop: "2vw",
@@ -594,9 +541,9 @@ const SubcategoryFilterProduct = () => {
                   </span>
                 </div>
               </div> */}
-                  {filterData.length > 0 && (
-                    <>
-                      {/* <div
+                {filterData.length > 0 && (
+                  <>
+                    {/* <div
                     style={{
                       fontSize: "18px",
                       marginTop: "2vw",
@@ -605,8 +552,8 @@ const SubcategoryFilterProduct = () => {
                   >
                     {t("Warranty")}
                   </div> */}
-                      {/* <hr /> */}
-                      {/* <div className="promotion_row_category">
+                    {/* <hr /> */}
+                    {/* <div className="promotion_row_category">
                     <div className="promotion_item_category">
                       <label class="containers">
                         <input type="checkbox" />
@@ -657,141 +604,164 @@ const SubcategoryFilterProduct = () => {
                       <span style={{ marginTop: ".5vw" }}>6 Month</span>
                     </div>
                   </div> */}
-                    </>
-                  )}
+                  </>
+                )}
+              </div>
+              <div>
+                <div className="item_header">
+                  <div>
+                    {filterData.length ? filterData.length : 0} {t("item")}{" "}
+                    <span style={{ color: "rgb(248, 86, 6)" }}>"{q}"</span>
+                  </div>
+                  <div className="view_item">
+                    <span style={{ color: "gray" }}>View:</span>
+                    <button onClick={handlegridview}>
+                      <IoGridSharp style={{ fontSize: "1.5vw" }} />
+                    </button>
+                    <button onClick={handlelistview}>
+                      <FaListUl style={{ fontSize: "1.5vw", color: "gray" }} />
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <div className="item_header">
-                    <div>
-                      {filterData.length ? filterData.length : 0} {t("item")}{" "}
-                      <span style={{ color: "rgb(248, 86, 6)" }}>"{q}"</span>
-                    </div>
-                    <div className="view_item">
-                      <span style={{ color: "gray" }}>View:</span>
-                      <button onClick={handlegridview}>
-                        <IoGridSharp style={{ fontSize: "1.5vw" }} />
-                      </button>
-                      <button onClick={handlelistview}>
-                        <FaListUl
-                          style={{ fontSize: "1.5vw", color: "gray" }}
+
+                <div
+                  className="hr_tag"
+                  style={{ width: "80.3vw", marginLeft: ".5vw" }}
+                >
+                  <hr />
+                </div>
+                {filterVisible && (
+                  <div className="main_div_filter">
+                    {(visualMaxPrice || visualMinPrice) && (
+                      <div className="filter_data">
+                        Price : {visualMinPrice}-{visualMaxPrice}{" "}
+                        <IoIosClose
+                          onClick={handleCancelPrice}
+                          color="black"
+                          cursor={"pointer"}
+                          size={21}
                         />
-                      </button>
-                    </div>
+                      </div>
+                    )}
+                    {selectBrand && (
+                      <div className="filter_data">
+                        Brand : {selectBrand}{" "}
+                        <IoIosClose
+                          color="black"
+                          cursor={"pointer"}
+                          size={21}
+                          onClick={() => handleClickBrand(selectBrand)}
+                        />
+                      </div>
+                    )}
+                    {(visualMinPrice || visualMaxPrice || selectBrand) && (
+                      <div className="clear_button" onClick={() => cancelAll()}>
+                        Clear all
+                      </div>
+                    )}
                   </div>
-
-                  <div
-                    className="hr_tag"
-                    style={{ width: "80.3vw", marginLeft: ".5vw" }}
-                  >
-                    <hr />
-                  </div>
-                  {filterVisible && (
-                    <div className="main_div_filter">
-                      {(visualMaxPrice || visualMinPrice) && (
-                        <div className="filter_data">
-                          Price : {visualMinPrice}-{visualMaxPrice}{" "}
-                          <IoIosClose
-                            onClick={handlecancelPrice}
-                            color="black"
-                            cursor={"pointer"}
-                            size={21}
-                          />
+                )}
+                <div className="container_filter_product">
+                  {loading ? (
+                    <div className="loader_container main_box">
+                      {[...Array(8)].map((_, index) => (
+                        <div key={index} className="box loading_box">
+                          <span className="loader4"></span>
                         </div>
-                      )}
-                      {selectBrand && (
-                        <div className="filter_data">
-                          Brand : {selectBrand}{" "}
-                          <IoIosClose
-                            color="black"
-                            cursor={"pointer"}
-                            size={21}
-                            onClick={() => handleclikbrand(selectBrand)}
-                          />
-                        </div>
-                      )}
-                      {(visualMaxPrice || visualMaxPrice || selectBrand) && (
-                        <div
-                          className="clear_button"
-                          onClick={() => cancelAll()}
-                        >
-                          Clear all
-                        </div>
-                      )}
+                      ))}
                     </div>
-                  )}
-                  <div className="container_filter_product">
-                    {filterData.length > 0 ? (
-                      <>
-                        {gridview && (
-                          <div className="main_box">
-                            {currentItems.map((product) => (
-                              <Link
-                                key={product.id}
-                                style={{
-                                  textDecoration: "none",
-                                  color: "black",
-                                }}
-                                to={`/products/${product.id}?productId=${product.id}`}
-                              >
-                                <div className="box">
-                                  <div className="img-box">
-                                    <img
-                                      src={`http://localhost:8000${product.cover_image}?amp=1`}
-                                      alt={product.name}
-                                    />
-                                  </div>
-
-                                  <div className="detail-box">
-                                    <div className="title">{product.name}</div>
-                                    <div className="price_item">
-                                      {" "}
-                                      <span style={{ fontSize: "1.8vw" }}>
-                                        ৳
-                                      </span>{" "}
-                                      {product.price}
+                  ) : (
+                    <>
+                      {filterData.length > 0 ? (
+                        <>
+                          {gridview && (
+                            <div className="main_box">
+                              {currentItems.map((product) => (
+                                <Link
+                                  key={product.id}
+                                  style={{
+                                    textDecoration: "none",
+                                    color: "black",
+                                  }}
+                                  to={`/products/${product.id}?productId=${product.id}`}
+                                >
+                                  <div className="box">
+                                    <div className="img-box">
+                                      <img
+                                        src={`${process.env.REACT_APP_ClOUD}${product.cover_image}?amp=1`}
+                                        alt={product.name}
+                                      />
                                     </div>
 
-                                    <div>
-                                      <button className="order-now-button">
-                                        Order Now
-                                      </button>
+                                    <div className="detail-box">
+                                      <div className="title">
+                                        {product.name}
+                                      </div>
+                                      <div className="price_item">
+                                        <span
+                                          className="currency_bd"
+                                          style={{ fontSize: "1.6vw" }}
+                                        >
+                                          ৳
+                                        </span>
+                                        {calculateDiscount(product) ||
+                                          handlePrice(product.id)}
+                                        {product.discount && (
+                                          <span class="origin-block ml-3">
+                                            <span class="  pdp-price_type_deleted pdp-price_color_lightgray item-price-original">
+                                              <span
+                                                className="currency"
+                                                style={{ fontSize: "1.1vw" }}
+                                              >
+                                                ৳
+                                              </span>{" "}
+                                              {handlePrice(product.id)}
+                                            </span>
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      <div>
+                                        <button className="order-now-button">
+                                          Order Now
+                                        </button>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                        {listview && (
-                          <div className="list_main_box">
-                            {currentItems.map((product) => (
-                              <Link
-                                key={product.id}
-                                style={{
-                                  textDecoration: "none",
-                                  color: "black",
-                                }}
-                                to={`/products/${product.id}?productId=${product.id}`}
-                              >
-                                <div className="list_box">
-                                  <div className="list_img_box">
-                                    <img
-                                      src={`http://localhost:8000${product.cover_image}`}
-                                      alt={product.name}
-                                    />
-                                  </div>
-                                  <div className="list_detail-box">
-                                    <div className="list_title">
-                                      {product.name}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                          {listview && (
+                            <div className="list_main_box">
+                              {currentItems.map((product) => (
+                                <Link
+                                  key={product.id}
+                                  style={{
+                                    textDecoration: "none",
+                                    color: "black",
+                                  }}
+                                  to={`/products/${product.id}?productId=${product.id}`}
+                                >
+                                  <div className="list_box">
+                                    <div className="list_img_box">
+                                      <img
+                                        src={`${process.env.REACT_APP_ClOUD}${product.cover_image}`}
+                                        alt={product.name}
+                                      />
                                     </div>
-                                    <div className="list_price_item">
-                                      {" "}
-                                      <span style={{ fontSize: "1.8vw" }}>
-                                        ৳
-                                      </span>{" "}
-                                      {product.price}
-                                    </div>
-                                    {/* <div>
+                                    <div className="list_detail-box">
+                                      <div className="list_title">
+                                        {product.name}
+                                      </div>
+                                      <div className="list_price_item">
+                                        {" "}
+                                        <span style={{ fontSize: "1.8vw" }}>
+                                          ৳
+                                        </span>{" "}
+                                        {product.price}
+                                      </div>
+                                      {/* <div>
                                       {imageArray1.map((_, index) => (
                                         <img
                                           style={{ height: ".8vw" }}
@@ -810,55 +780,56 @@ const SubcategoryFilterProduct = () => {
                                         (0)
                                       </span>
                                     </div> */}
-                                    <ul class="b">
-                                      <li>Produt Type:{q}</li>
-                                      {/* <li>Color : Black</li> */}
-                                      <li>Gender : Women</li>
-                                      <li>
-                                        Brand :{" "}
-                                        {product.brand?.name
-                                          ? product.brand.name
-                                          : "No Brand"}{" "}
-                                      </li>
-                                    </ul>
-                                    <button className="order-now-button list_view_order_button">
-                                      Order Now
-                                    </button>
+                                      <ul class="b">
+                                        <li>Produt Type:{q}</li>
+                                        {/* <li>Color : Black</li> */}
+                                        <li>Gender : Women</li>
+                                        <li>
+                                          Brand :{" "}
+                                          {product.brand?.name
+                                            ? product.brand.name
+                                            : "No Brand"}{" "}
+                                        </li>
+                                      </ul>
+                                      <button className="order-now-button list_view_order_button">
+                                        Order Now
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              </Link>
-                            ))}
-                          </div>
-                        )}
-                        <div className="last_element">
-                          <div>
-                            <ExperienceIsuue />
-                          </div>
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                          <div className="last_element">
+                            <div>
+                              <ExperienceIsuue />
+                            </div>
 
-                          <div className="pagination-buttons">
-                            {renderPaginationButtons()}
+                            <div className="pagination-buttons">
+                              {renderPaginationButtons()}
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <hr />
-                        <div className="serach_result">
-                          <div className="search_resut_title">
-                            Search No Result
+                        </>
+                      ) : (
+                        <>
+                          <hr />
+                          <div className="serach_result">
+                            <div className="search_resut_title">
+                              Search No Result
+                            </div>
+                            <div className="search_resut_des">
+                              We're sorry. We cannot find any matches for your
+                              search term.
+                            </div>
                           </div>
-                          <div className="search_resut_des">
-                            We're sorry. We cannot find any matches for your
-                            search term.
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
-            </>
-          )}
+            </div>
+          </>
         </section>
         <Footer />
       </div>

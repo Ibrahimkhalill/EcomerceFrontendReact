@@ -14,15 +14,15 @@ function Footer() {
               <div className="contact_link_box">
                 <Link href="">
                   <i className="fa fa-map-marker" aria-hidden="true"></i>
-                  <span>Location</span>
+                  <span> Barishal Sadar, Barishal, Dhaka</span>
                 </Link>
-                <Link href="">
+                <a href="tel:+8801829674786">
                   <i className="fa fa-phone" aria-hidden="true"></i>
-                  <span>Call +01 1746185166</span>
-                </Link>
+                  <span> +8801829674786</span>
+                </a>
                 <Link href="">
                   <i className="fa fa-envelope" aria-hidden="true"></i>
-                  <span>mdibrahimkhalil516@gmail.com</span>
+                  <span>tannifashionhouse@gmail.com</span>
                 </Link>
               </div>
             </div>
@@ -30,16 +30,22 @@ function Footer() {
           <div className="col-md-4 footer-col">
             <div className="footer_detail">
               <Link href="index.html" className="footer-logo">
-                Ecom
+                Tanni's Fashion House
               </Link>
               <p>
-                Necessary, making this the first true generator on the Internet.
-                It uses a dictionary of over 200 Latin words, combined with
+                It is a trendy e-commerce platform offering a wide range of
+                stylish clothing and accessories for all occasions. Our
+                collection is carefully curated to ensure you always look your
+                best, with options for both men and women. 
               </p>
               <div className="footer_social">
-                <Link href="">
+                <a
+                  href="https://www.facebook.com/tannifashionhouse"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <FaFacebookF />
-                </Link>
+                </a>
                 <Link href="">
                   <FaInstagram />
                 </Link>
@@ -49,19 +55,18 @@ function Footer() {
               </div>
             </div>
           </div>
-          <div className="col-md-4 footer-col">
-            <div className="map_container">
-              <div className="map">
-                <div id="googleMap"></div>
-              </div>
-            </div>
-          </div>
         </div>
         <div className="footer-info">
           <div className="col-lg-7 mx-auto px-0">
             <p>
-              &copy; <span id="displayYear"></span> All Rights Reserved By{" "}
-              <Link href="https://html.design/">Ibrahim Khalil</Link>
+              &copy; <span id="displayYear"></span> Developed By{" "}
+              <a
+                target="_blank"
+                href="https://ibrahimkhalill.netlify.app/"
+                rel="noreferrer"
+              >
+                Ibrahim Khalil
+              </a>
             </p>
           </div>
         </div>

@@ -14,14 +14,33 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { SlHeart } from "react-icons/sl";
 import { useCart } from "../components/CartContext";
 import { IoCartOutline } from "react-icons/io5";
+import { useAuth } from "../components/Auth";
 
 function Navbar({ Items, serachName }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { cartItems } = useCart();
+  const { cartItems, setCartItems } = useCart();
+  const { logout } = useAuth();
   const isLoggedIn =
     localStorage.getItem("authToken") && localStorage.getItem("username");
+  const [isScrolled, setIsScrolled] = useState(false);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 0) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
   const [q, setQ] = useState("");
   const [user, setUser] = useState([]);
   const username = user?.username;
@@ -31,15 +50,19 @@ function Navbar({ Items, serachName }) {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/logout/", {
-        method: "POST",
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/logout/`,
+        {
+          method: "POST",
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
         console.log(data);
         localStorage.removeItem("authToken");
         localStorage.removeItem("username");
+        logout();
         navigate("/");
       } else {
         console.error("Logout failed:", response.statusText);
@@ -53,7 +76,7 @@ function Navbar({ Items, serachName }) {
   const searchProduct = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/search-product/",
+        `${process.env.REACT_APP_API_KEY}/api/search-product/`,
         {
           method: "POST",
           headers: {
@@ -76,18 +99,21 @@ function Navbar({ Items, serachName }) {
       console.error("An error occurred during search:", error);
     }
   };
-  const [cartitems, setCartItems] = useState([]);
+
   const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Token ${authToken}`,
-          },
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/cart-items/`,
+          {
+            headers: {
+              "Content-type": "application/json",
+              Authorization: `Token ${authToken}`,
+            },
+          }
+        );
 
         if (response.ok) {
           const data = await response.json();
@@ -106,7 +132,7 @@ function Navbar({ Items, serachName }) {
     if (authToken) {
       fetchCartItems();
     }
-  }, [authToken]);
+  }, [authToken, setCartItems]);
 
   const [sidebar, setsidebar] = useState(false);
 
@@ -117,6 +143,7 @@ function Navbar({ Items, serachName }) {
   // function w3_close() {
   //   document.getElementById("mySidebar").style.display = "none";
   // }
+ 
   return (
     <>
       {sidebar && (
@@ -129,7 +156,7 @@ function Navbar({ Items, serachName }) {
           <Link class="w3-bar-item w3-button">Link 3</Link>
         </div>
       )}
-      <div className="hero_area">
+      <div className={`hero_area ${isScrolled ? "navbar-fixed" : ""}`}>
         <header className="header_section">
           <div className="">
             <nav className="navbar navbar-expand-lg custom_nav-container ">
@@ -147,8 +174,8 @@ function Navbar({ Items, serachName }) {
               </div>
 
               <Link
-                to="/cart"
-                className="d-lg-none"
+                to={authToken ? "/cart" : "/login"}
+                className="d-lg-none d-mdx-none"
                 style={{ border: "none", color: "white", background: "none" }}
               >
                 <IoCartOutline
@@ -157,7 +184,7 @@ function Navbar({ Items, serachName }) {
                   color="white"
                 />
                 <span className=" cart_total_responsive">
-                  {Items || cartitems}
+                  {cartItems || Items}
                 </span>
               </Link>
               <div
@@ -180,7 +207,7 @@ function Navbar({ Items, serachName }) {
                         type="submit"
                         onClick={searchProduct}
                       >
-                        <LuSearch style={{ fontSize: "1.2vw" }} />
+                        <LuSearch size={20} />
                       </button>
                     </div>
                   </li>
@@ -189,8 +216,10 @@ function Navbar({ Items, serachName }) {
                     <>
                       <li className="dropdown">
                         <div className="dropbtn">
-                          <CgProfile style={{ fontSize: "1.2vw" }} />
+                          <div className="d-flex align-items-center">
+                          <CgProfile size={18} />
                           {username}
+                          </div>
                           <div> Order & Account</div>
                           <div className="dropdown-content">
                             <Link to="/account/my-profile">
@@ -224,14 +253,17 @@ function Navbar({ Items, serachName }) {
                         <img src={bn} width={20} alt="" /> <LanguageSelector />
                       </li>
                       <li className="position-relative">
-                        <Link to="/cart" style={{ border: "none" }}>
+                        <Link
+                          to={authToken ? "/cart" : "/login"}
+                          style={{ border: "none" }}
+                        >
                           <IoCartOutline
                             className=" ml-2 "
                             size={30}
                             color="white"
                           />
                           <span className="cart_item_navbar">
-                            {cartItems || cartitems}
+                            {cartItems || Items}
                           </span>
                         </Link>
                       </li>
@@ -262,7 +294,10 @@ function Navbar({ Items, serachName }) {
                         <img src={bn} width={20} alt="" /> <LanguageSelector />
                       </li>
                       <li>
-                        <Link to="/cart" style={{ border: "none" }}>
+                        <Link
+                          to={authToken ? "/cart" : "/login"}
+                          style={{ border: "none" }}
+                        >
                           <img className="cart-icon" src={cart} alt="" />
                         </Link>
                       </li>
@@ -275,7 +310,11 @@ function Navbar({ Items, serachName }) {
         </header>
       </div>
 
-      <div className="responsive_search  d-lg-none">
+      <div
+        className={`responsive_search  d-lg-none ${
+          isScrolled ? "responsive_search_navbar-fixed" : ""
+        }`}
+      >
         <div className="search_res_input">
           <input
             type="text"

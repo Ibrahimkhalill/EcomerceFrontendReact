@@ -4153,7 +4153,8 @@ input[type="button"].btn-block {
   -ms-flex-pack: justify;
   justify-content: space-between;
   /* padding: 0.5rem 1rem; */
-  padding-right: 1.5rem;
+  padding-right: 2rem;
+ 
 }
 
 .navbar > .container,
@@ -5719,7 +5720,7 @@ a.close.disabled {
 }
 
 .modal-open {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .modal-open .modal {

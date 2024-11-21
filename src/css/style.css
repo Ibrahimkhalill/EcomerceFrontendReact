@@ -7,7 +7,8 @@ body {
   color: #0c0c0c;
   background: #eff0f5 !important;
   position: relative;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, Helvetica Neue,
+    Helvetica, sans-serif;
 }
 .language-selector {
   position: relative;
@@ -15,6 +16,15 @@ body {
 
 .selected-language {
   cursor: pointer;
+}
+.navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+  z-index: 1000; /* Ensures the navbar is above other content */
 }
 
 .language-list {
@@ -46,10 +56,10 @@ body {
   margin: 0;
 }
 .language-list li:hover {
-  color: #f85606;
+  color: #000;
 }
 .language:hover {
-  border: 1px solid #f85606;
+  border: 1px solid #000;
 }
 .language {
   display: flex;
@@ -101,7 +111,7 @@ body {
 }
 
 .dropdown-content a:hover {
-  color: #f57224;
+  color: black;
 }
 
 .dropdown:hover .dropdown-content {
@@ -198,8 +208,8 @@ h2 {
   color: coral;
   background-color: white;
   width: 20px;
-  top: 1rem;
-  right: 0.5rem;
+  top: 0.7rem;
+  right: 1rem;
   border-radius: 50%;
   font-size: 13px;
   display: flex;
@@ -276,7 +286,7 @@ a:focus {
   min-height: 4vh;
   -webkit-box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.25);
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.25);
-  background: #f85606;
+  background: #000;
 }
 .responsive_search {
   display: none;
@@ -374,14 +384,14 @@ a:focus {
   color: #000 !important;
 }
 .category-item:hover {
-  color: #f57224;
+  color: black;
   background: rgb(231, 226, 226);
 }
 .category-item {
   display: flex;
 }
 .subcategory-item:hover {
-  color: #f57224;
+  color: black;
   background: rgb(231, 226, 226);
   cursor: pointer;
 }
@@ -554,7 +564,7 @@ a:focus {
 }
 /* On mouse-over, add a grey background color */
 .containers:hover input ~ .checkmark {
-  border-color: #f57224;
+  border-color: black;
 }
 .price_filter input {
   width: 4vw;
@@ -569,9 +579,9 @@ a:focus {
   border-radius: 3px;
   border: none;
   margin-left: 0.5vw;
-  background-color: #f57224;
-  border-color: #f57224;
-  width: 4vw;
+  background-color: black;
+  border-color: black;
+  width: 3vw;
   height: 4vh;
   outline: none !important;
   color: #fff;
@@ -579,8 +589,8 @@ a:focus {
 }
 /* When the checkbox is checked, add a blue background */
 .containers input:checked ~ .checkmark {
-  background-color: #f57224;
-  border: #f57224;
+  background-color: black;
+  border: black;
 }
 .experice_text_area {
   display: flex;
@@ -597,8 +607,8 @@ a:focus {
   /* position: absolute;
   top: 6vw;
   right: 10vw; */
-  background-color: #f57224;
-  border: 1px solid #f57224;
+  background-color: black;
+  border: 1px solid black;
   color: white;
 }
 button {
@@ -619,18 +629,18 @@ button {
   border: 1px solid #080808 !important;
 }
 .cancel:hover {
-  background: #f57224 !important;
-  border: 1px solid #f57224 !important;
+  background: black !important;
+  border: 1px solid black !important;
 }
 textarea {
   outline: none !important;
 }
 textarea:hover {
-  border-color: #f57224 !important;
+  border-color: black !important;
 }
 .active {
-  background-color: #f57224 !important;
-  border-color: #f57224 !important;
+  background-color: black !important;
+  border-color: black !important;
 }
 /* Create the checkmark/indicator (hidden when not checked) */
 .checkmark:after {
@@ -688,7 +698,7 @@ textarea:hover {
 }
 
 .promotion_item_category span:hover {
-  color: #f57224;
+  color: black;
 }
 
 .full_div_filter_product {
@@ -709,6 +719,7 @@ textarea:hover {
 .img_box_category img {
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 button {
   background: none;
@@ -741,7 +752,7 @@ button {
   outline: none !important;
 }
 .feedback_product button:hover {
-  border-color: #f57224;
+  border-color: black;
 }
 .pagination-buttons button {
   display: inline-block;
@@ -754,15 +765,15 @@ button {
   outline: none !important;
 }
 .pagination-buttons button.active {
-  background-color: #f57224; /* Add your desired background color for active button */
+  background-color: black; /* Add your desired background color for active button */
   color: white;
   outline: none; /* Add your desired text color for active button */
 }
 .pagination-buttons button:hover {
-  border-color: #f57224;
+  border-color: black;
 }
 .pagination-buttons button:not([disabled]):not(:first-child):hover {
-  border-color: #f57224;
+  border-color: black;
 }
 
 .pagination-buttons button:disabled:hover {
@@ -820,10 +831,11 @@ button {
   width: 36px;
   height: 36px;
   text-align: center;
-  /* border: 1px solid #f85606; */
+  /* border: 1px solid #000; */
   border-radius: 2px;
   padding: 1px;
 }
+
 .image-wrap-color {
   box-sizing: border-box;
   display: inline-block;
@@ -831,12 +843,15 @@ button {
   margin-top: 8px;
   margin-right: 12px;
   overflow: hidden;
-  width: 36px;
-  height: 36px;
+  width: 35px;
+  height: 35px;
   text-align: center;
   border: 1px solid #d8d4d2;
   border-radius: 2px;
   padding: 1px;
+}
+.courosel_responsive {
+  display: none;
 }
 .image-wrap-size {
   box-sizing: border-box;
@@ -855,10 +870,10 @@ button {
   cursor: pointer;
 }
 .image-wrap-color:hover {
-  border-color: #f85606;
+  border-color: #000;
 }
 .image-wrap-size:hover {
-  border-color: #f85606;
+  border-color: #000;
 }
 .size_box {
   display: flex;
@@ -888,12 +903,23 @@ button {
   padding: 5px 0px;
   transition: 0.3s;
 }
-
+.preview_image {
+  height: 200px!important; /* Desired fixed height */
+  width: 100% !important;; /* Adjust width based on height */
+  object-fit: contain; /* Ensures the image fits within the container */
+}
 .order-now-button:hover {
-  background-color: #f85606;
+  background-color: #000;
   color: white;
 }
-
+.box_elements_loading_category {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  height: auto;
+  width: 95vw;
+  margin-left: 1vw;
+  margin-bottom: 1vw;
+}
 .custom_nav-container .navbar-nav .nav-item .nav-link {
   padding: 5px 20px;
   color: #131313;
@@ -961,9 +987,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 4vw !important;
-  height: 4.4vh !important;
-  background-color: #f88247 !important;
+  height: 100%;
+  padding: 0px 10px;
+  background-color: #000 !important;
   border: none;
   outline: none !important;
   border-radius: 0.2vw !important;
@@ -1155,7 +1181,7 @@ button {
 }
 .price_item {
   font-size: 18px;
-  color: #f85606;
+  color: #000;
   line-height: 22px;
 }
 .box_elements_category img {
@@ -1188,14 +1214,16 @@ button {
   -webkit-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-  height: 215px;
+  /* height: 215px; */
 
   /* height: 20vh; */
 }
 
 .product_section .box .img-box img {
   max-width: 100%;
+  width: 100%;
   max-height: 160px;
+  object-fit: contain;
 }
 
 .product_section .box .detail-box {
@@ -1230,7 +1258,7 @@ button {
   top: 0.5vw;
   left: 50vw;
   font-size: 18px;
-  color: #f85606;
+  color: #000;
   line-height: 22px;
 }
 .product_section .box .detail-box h5 {
@@ -1631,7 +1659,7 @@ ul.b {
 .footer_section {
   background-color: #002c3e;
   color: #ffffff;
-  /* padding-top: 70px; */
+  padding-top: 50px;
 }
 
 .footer_section {
@@ -1816,11 +1844,6 @@ li.nav-item ul li a:focus {
 }
 
 /** footer **/
-
-footer {
-  background: #f8f8f8;
-  padding: 90px 0 70px;
-}
 
 .logo_footer {
   margin-bottom: 30px;

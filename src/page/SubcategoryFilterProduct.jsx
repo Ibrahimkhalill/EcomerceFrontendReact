@@ -22,7 +22,6 @@ import { IoIosClose } from "react-icons/io";
 import ExperienceIsuue from "../components/ExperienceIsuue";
 import FooterResponsive from "../components/FooterResponsive";
 const SubcategoryFilterProduct = () => {
-  const [cartitems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -40,6 +39,7 @@ const SubcategoryFilterProduct = () => {
   const [subcategory, setSubCategory] = useState([]);
   const [subcategoryData, setSubCategoryData] = useState([]);
   const [categoryName, setCategoryName] = useState("");
+  const [varintData, setVarinatData] = useState([]);
   const navigate = useNavigate();
   const itemsPerPage = 14;
   const q = queryParams.get("q");
@@ -51,22 +51,17 @@ const SubcategoryFilterProduct = () => {
 
   useEffect(() => {
     sessionStorage.removeItem("redirectFrom");
-    const fetchCartItems = async () => {
+    setSearchData(searchResults);
+    setFilterData(searchResults);
+    const fetchData = async () => {
       try {
-        setLoading(true);
-        const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Token ${authToken}`,
-          },
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/get-products/`
+        );
         const data = await response.json();
-        const { cartItems } = data;
+        const { variant } = data;
 
-        setCartItems(cartItems);
-        setSearchData(searchResults);
-        setFilterData(searchResults);
-        // setLoading(false);
+        setVarinatData(variant);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -74,23 +69,29 @@ const SubcategoryFilterProduct = () => {
     const fetchBrand = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://127.0.0.1:8000/api/get-brand/", {
-          method: "GET",
-          headers: {
-            "Content-type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/get-brand/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-type": "application/json",
+            },
+          }
+        );
         const data = await response.json();
         setSubCategory(data.subcategory);
         setBrand(data.brand);
-        setLoading(false);
+        setInterval(() => {
+          setLoading(false);
+        }, 500);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchCartItems();
+ 
     fetchBrand();
+    fetchData();
   }, [authToken, searchResults]);
 
   useEffect(() => {
@@ -108,9 +109,7 @@ const SubcategoryFilterProduct = () => {
     setSubCategoryData(filter);
   }, [categoryName, q, subcategory]);
 
-  const imageArray1 = Array.from({ length: 5 });
-  const imageArray2 = Array.from({ length: 4 });
-  const imageArray3 = Array.from({ length: 3 });
+
 
   const handlelistview = (e) => {
     setListview(true);
@@ -217,64 +216,30 @@ const SubcategoryFilterProduct = () => {
   const [visualMinPrice, setVisualMinPrice] = useState(null);
   const [visualMaxPrice, setVisualMaxPrice] = useState(null);
 
-  const handleApplyPrice = () => {
-    if (maxPrice && minPrice) {
-      if (selectBrand) {
-        const filter = searchData.filter(
-          (data) =>
-            data.price >= minPrice &&
-            data.price <= maxPrice &&
-            data.brand?.name === selectBrand
-        );
-        setVisualMinPrice(minPrice);
-        setVisualMaxPrice(maxPrice);
-        setFilterData(filter);
-        setFilterVisible(true);
-        return;
-      }
-      const filter = searchData.filter(
-        (data) => data.price >= minPrice && data.price <= maxPrice
-      );
-      setVisualMinPrice(minPrice);
-      setVisualMaxPrice(maxPrice);
-      setFilterData(filter);
-      setFilterVisible(true);
-      return;
-    } else if (maxPrice) {
-      if (selectBrand) {
-        const filter = searchData.filter(
-          (data) => data.price <= maxPrice && data.brand?.name === selectBrand
-        );
-        setVisualMaxPrice(maxPrice);
-        setFilterData(filter);
-        setFilterVisible(true);
-        return;
-      }
-      const filter = searchData.filter((data) => data.price <= maxPrice);
-      setVisualMaxPrice(maxPrice);
-      setFilterData(filter);
-      setFilterVisible(true);
-      return;
-    } else if (minPrice) {
-      if (selectBrand) {
-        const filter = searchData.filter(
-          (data) => data.price >= minPrice && data.brand?.name === selectBrand
-        );
-        setVisualMaxPrice(maxPrice);
-        setFilterData(filter);
-        setFilterVisible(true);
-        return;
-      }
-      const filter = searchData.filter((data) => data.price >= minPrice);
-      setVisualMinPrice(minPrice);
-      setFilterData(filter);
-      setFilterVisible(true);
-      return;
-    } else {
-      return;
-    }
+  // Helper Function
+  const filterDataByPriceAndBrand = (min, max, brand) => {
+    return searchData.filter((data) => {
+      const price = handlePrice(data.id);
+      const matchesMinPrice = min ? price >= min : true;
+      const matchesMaxPrice = max ? price <= max : true;
+      const matchesBrand = brand ? data.brand?.name === brand : true;
+      return matchesMinPrice && matchesMaxPrice && matchesBrand;
+    });
   };
-  const handlecancelPrice = () => {
+
+  // Apply Price Filter
+  const handleApplyPrice = () => {
+    if (!minPrice && !maxPrice) return;
+
+    const filter = filterDataByPriceAndBrand(minPrice, maxPrice, selectBrand);
+    setVisualMinPrice(minPrice || null);
+    setVisualMaxPrice(maxPrice || null);
+    setFilterData(filter);
+    setFilterVisible(true);
+  };
+
+  // Cancel Price Filter
+  const handleCancelPrice = () => {
     setMaxPrice("");
     setMinPrice("");
     setVisualMaxPrice("");
@@ -284,59 +249,36 @@ const SubcategoryFilterProduct = () => {
       setFilterData(searchResults);
     }
   };
-  const handleclikbrand = (name) => {
+
+  // Handle Brand Selection
+  const handleClickBrand = (name) => {
     if (selectBrand === name) {
+      // Deselect brand
       setSelectBrand("");
       setIsChecked(false);
       setFilterData(searchResults);
       handleApplyPrice();
       return;
-    } else if (minPrice || maxPrice) {
-      const filter = searchData.filter(
-        (data) =>
-          data.brand?.name === name &&
-          data.price >= minPrice &&
-          data.price <= maxPrice
-      );
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
-    } else if (maxPrice) {
-      const filter = searchData.filter(
-        (data) => data.brand?.name === name && data.price <= maxPrice
-      );
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
-    } else if (minPrice) {
-      const filter = searchData.filter(
-        (data) => data.brand?.name === name && data.price >= minPrice
-      );
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
-    } else {
-      const filter = searchData.filter((data) => data.brand?.name === name);
-      setFilterData(filter);
-      setIsChecked(true);
-      setSelectBrand(name);
-      setFilterVisible(true);
     }
+
+    // Filter by brand, considering prices if applicable
+    const filter = filterDataByPriceAndBrand(minPrice, maxPrice, name);
+    setFilterData(filter);
+    setIsChecked(true);
+    setSelectBrand(name);
+    setFilterVisible(true);
   };
 
   const cancelAll = () => {
     setFilterData(searchResults);
-    handlecancelPrice();
+    handleCancelPrice();
     setFilterVisible(false);
     setSelectBrand("");
   };
   const handleSubcategoryClick = async (subcategory) => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/get-subcategory-product/",
+        `${process.env.REACT_APP_API_KEY}/api/get-subcategory-product/`,
         {
           method: "POST",
           headers: {
@@ -355,13 +297,28 @@ const SubcategoryFilterProduct = () => {
     }
   };
   const calculateDiscount = (product) => {
-    if (product?.discount) {
+    if (product.discount) {
+      const price = handlePrice(product.id);
       const discountAmount =
-        (parseFloat(product?.price) * parseFloat(product?.discount)) / 100;
-      const discountedPrice = product?.price - discountAmount;
+        (parseFloat(price) * parseFloat(product?.discount)) / 100;
+      const discountedPrice = price - discountAmount;
       return Math.round(discountedPrice);
     }
   };
+  const handlePrice = (id) => {
+    const data = varintData.filter((item) => item.product?.id == id);
+    return data[0]?.price;
+  };
+  
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
   return (
     <>
       <div className="sub_page">
@@ -439,7 +396,7 @@ const SubcategoryFilterProduct = () => {
                     />
                     <button onClick={handleApplyPrice}>{t("apply")}</button>
                   </div>
-                  {brand.length > 0 && filterData.length > 0 && (
+                  {brand.length > 0 && (
                     <>
                       <div
                         style={{
@@ -454,7 +411,7 @@ const SubcategoryFilterProduct = () => {
                       <hr />
                     </>
                   )}
-                  {filterData.length > 0 && (
+                  {brand.length > 0 && (
                     <>
                       <div className="promotion_row_category">
                         {brand &&
@@ -470,7 +427,7 @@ const SubcategoryFilterProduct = () => {
                                   checked={
                                     item.name === selectBrand ? isChecked : ""
                                   }
-                                  onChange={() => handleclikbrand(item.name)}
+                                  onChange={() => handleClickBrand(item.name)}
                                 />
                                 <span class="checkmark"></span>
                               </label>
@@ -687,7 +644,7 @@ const SubcategoryFilterProduct = () => {
                       <div className="filter_data">
                         Price : {visualMinPrice}-{visualMaxPrice}{" "}
                         <IoIosClose
-                          onClick={handlecancelPrice}
+                          onClick={handleCancelPrice}
                           color="black"
                           cursor={"pointer"}
                           size={21}
@@ -701,7 +658,7 @@ const SubcategoryFilterProduct = () => {
                           color="black"
                           cursor={"pointer"}
                           size={21}
-                          onClick={() => handleclikbrand(selectBrand)}
+                          onClick={() => handleClickBrand(selectBrand)}
                         />
                       </div>
                     )}
@@ -714,7 +671,7 @@ const SubcategoryFilterProduct = () => {
                 )}
                 <div className="container_filter_product">
                   {loading ? (
-                    <div className="main_box">
+                    <div className="loader_container main_box">
                       {[...Array(8)].map((_, index) => (
                         <div key={index} className="box loading_box">
                           <span className="loader4"></span>
@@ -739,7 +696,7 @@ const SubcategoryFilterProduct = () => {
                                   <div className="box">
                                     <div className="img-box">
                                       <img
-                                        src={`http://localhost:8000${product.cover_image}?amp=1`}
+                                        src={`${process.env.REACT_APP_ClOUD}${product.cover_image}?amp=1`}
                                         alt={product.name}
                                       />
                                     </div>
@@ -749,11 +706,14 @@ const SubcategoryFilterProduct = () => {
                                         {product.name}
                                       </div>
                                       <div className="price_item">
-                                        <span style={{ fontSize: "1.6vw" }}>
+                                        <span
+                                          className="currency_bd"
+                                          style={{ fontSize: "1.6vw" }}
+                                        >
                                           ৳
                                         </span>
                                         {calculateDiscount(product) ||
-                                          product.price}
+                                          handlePrice(product.id)}
                                         {product.discount && (
                                           <span class="origin-block ml-3">
                                             <span class="  pdp-price_type_deleted pdp-price_color_lightgray item-price-original">
@@ -763,7 +723,7 @@ const SubcategoryFilterProduct = () => {
                                               >
                                                 ৳
                                               </span>{" "}
-                                              {product.price}
+                                              {handlePrice(product.id)}
                                             </span>
                                           </span>
                                         )}
@@ -794,7 +754,7 @@ const SubcategoryFilterProduct = () => {
                                   <div className="list_box">
                                     <div className="list_img_box">
                                       <img
-                                        src={`http://localhost:8000${product.cover_image}`}
+                                        src={`${process.env.REACT_APP_ClOUD}${product.cover_image}`}
                                         alt={product.name}
                                       />
                                     </div>

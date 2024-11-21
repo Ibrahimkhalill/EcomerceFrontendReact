@@ -1,19 +1,22 @@
 // useUpdateUserOrder.js
-import { useCart } from './CartContext';
+import { useCart } from "./CartContext";
 
 const useUpdateUserOrder = () => {
   const { setCartItems } = useCart();
 
   const updateUserOrder = async (variantId, action, count, authToken) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/update-item/', {
-        method: 'POST',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Token ${authToken}`,
-        },
-        body: JSON.stringify({ variantId, action, count }),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/update-item/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+          body: JSON.stringify({ variantId, action, count }),
+        }
+      );
       const data = await response.json();
       if (data.cartItems) {
         setCartItems(data.cartItems);

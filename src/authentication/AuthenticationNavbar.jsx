@@ -20,28 +20,27 @@ function AuthenticationNavbar() {
       navigate("/signup");
     }
   };
-  const handleGoBack = () => {
-    navigate('/');
-  };
+
   return (
     <>
       <div className="hero_area">
         <header className="header_section">
           <div className="">
             <nav className=" responsive_authentication_navbar ">
-              <div>
-                
-                <span className="mr-2" onClick={handleGoBack}>
-                  <IoIosArrowBack size={27}/>
-                </span>
-                Login / Signup
-              </div>
+              <Link to={"/"}>
+                <div>
+                  <span className="mr-2">
+                    <IoIosArrowBack size={27} />
+                  </span>
+                  Login / Signup
+                </div>
+              </Link>
             </nav>
           </div>
         </header>
       </div>
 
-      <div className="responsive_search  d-lg-none">
+      <div className="responsive_search pl-0 d-mdx-block d-lg-none">
         <div className="mod_tabs_header">
           <div
             className={`${

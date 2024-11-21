@@ -77,7 +77,7 @@
 .show {
   position: absolute;
   right: 13px;
-  top: 40px;
+  top: 37px;
   font-size: 13px;
   font-weight: 700;
   color: #222;
@@ -269,7 +269,7 @@ i span {
   flex-direction: column;
   row-gap: 20px;
 }
-@media (max-width: 448px) {
+@media (max-width: 765px) {
   .signup_container {
     display: flex !important;
     align-items: center !important;
@@ -301,7 +301,67 @@ i span {
   }
   .show {
     position: absolute;
-    top: 43px;
+    top: 41px;
+    right: 13px;
+    font-size: 13px;
+  }
+  .Google {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-left: 0px;
+  }
+  .signin_wrapper {
+    padding: 100px 0px;
+  }
+  .user_card {
+    width: auto;
+    max-width: 100%;
+    padding: 30px 10px;
+    height: auto;
+  }
+  .otp-input {
+    width: 13.7% !important;
+    margin: 4px;
+  }
+  .otp-input input {
+    height: 50px;
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 924px) {
+  .signup_container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 20px 0px;
+  }
+  .signup_header {
+    font-size: 19px;
+  }
+  .content {
+    /* top: 250px;
+    left: 45%; */
+    width: 90%;
+    height: auto;
+    max-height: 100%;
+    flex-direction: column;
+    padding: 10px 20px;
+  }
+  .field label {
+    font-size: 1.2rem;
+  }
+  .field input {
+    height: 5vh;
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+    font-family: "Poppins", sans-serif;
+  }
+  .show {
+    position: absolute;
+    top: 41px;
     right: 13px;
     font-size: 13px;
   }
@@ -326,5 +386,34 @@ i span {
   .otp-input input {
     height: 50px;
     width: 100%;
+  }
+}
+
+@media (min-width: 925px)  and (max-width: 1125px){
+  .signup_container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    padding: 20px 0px;
+  }
+  .signup_header {
+    font-size: 19px;
+  }
+  .content {
+    /* top: 250px;
+    left: 45%; */
+    width: 50%;
+    height: auto;
+    max-height: 100%;
+    flex-direction: column;
+    padding: 10px 20px;
+  }
+  .field input {
+    height: 4vh !important;
+    width: 100%;
+    outline: none;
+    font-size: 16px;
+    font-family: "Poppins", sans-serif;
   }
 }

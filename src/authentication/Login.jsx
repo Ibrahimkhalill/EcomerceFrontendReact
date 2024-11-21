@@ -6,6 +6,8 @@ import axios from "axios";
 import Navbar from "../page/Navbar";
 import { Modal } from "antd";
 import { RotatingLines } from "react-loader-spinner";
+import { useCart } from "../components/CartContext";
+
 import {
   ExclamationCircleOutlined,
   CheckCircleOutlined,
@@ -14,6 +16,7 @@ import { FiEye } from "react-icons/fi";
 import { PiEyeClosed } from "react-icons/pi";
 import { ImGooglePlus } from "react-icons/im";
 import AuthenticationNavbar from "./AuthenticationNavbar";
+import { useAuth } from "../components/Auth";
 
 const LoginForm = () => {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -28,11 +31,13 @@ const LoginForm = () => {
   const [error, setError] = useState(""); // Add error state
   const [errorModalVisible, setErrorModalVisible] = useState(false); // Add error modal visibility state
   const [usernamefocused, setUsernamefocused] = useState(false);
-  const [usernameerror, setUsernameerror] = useState("");
+  const [usernameError, setUsernameError] = useState("");
   const [passwordfocused, setPasswordFocused] = useState(false);
   const [passworderror, setPassworderror] = useState("");
   const [success, setSuccess] = useState("");
   const pathname = sessionStorage.getItem("redirectFrom");
+  const { setUsernames } = useCart();
+  const { Login } = useAuth();
 
   const navigate = useNavigate();
 
@@ -66,17 +71,32 @@ const LoginForm = () => {
     }
   }, [message]);
 
+  const validateEmail = (inputEmail) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(inputEmail);
+  };
+
+  const handleChange = (e) => {
+    const inputValue = e.target.value;
+    setUsername(inputValue);
+    if (!validateEmail(inputValue) && inputValue !== "") {
+      setUsernameError("Invalid email format!");
+    } else {
+      setUsernameError("");
+    }
+  };
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!username && !password) {
-      setUsernameerror("You can't leave empty");
+      setUsernameError("You can't leave empty");
       setPassworderror("You can't leave empty");
       setUsernamefocused(true);
       setPasswordFocused(true);
       return;
     }
     if (!username) {
-      setUsernameerror("You can't leave empty");
+      setUsernameError("You can't leave empty");
       setUsernamefocused(true);
       return;
     }
@@ -84,6 +104,10 @@ const LoginForm = () => {
     if (!password) {
       setPassworderror("You can't leave empty");
       setPasswordFocused(true);
+      return;
+    }
+   
+    if (usernameError) {
       return;
     }
 
@@ -94,30 +118,32 @@ const LoginForm = () => {
         username,
         password,
       };
-      const response = await fetch("http://127.0.0.1:8000/api/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCSRFToken(),
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken(),
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       if (response.status === 201) {
         const data = await response.json();
 
         localStorage.setItem("username", username);
         localStorage.setItem("authToken", data.token);
+        Login();
+
         if (pathname) {
           navigate(pathname);
         } else {
           navigate("/");
         }
       } else {
-        console.error("Login failed:", response.statusText);
-        const text = await response.text();
-        console.log("Response text:", text);
-
+        console.log("Username or password is Incorrect.");
         setError("Username or password is Incorrect.");
         setErrorModalVisible(true);
       }
@@ -133,75 +159,84 @@ const LoginForm = () => {
   }
 
   const [user, setUser] = useState([]);
+
   const login = useGoogleLogin({
-    onSuccess: (codeResponse) => setUser(codeResponse),
+    onSuccess: (codeResponse) => {
+      console.log("Google login success", codeResponse); // Debugging
+      setUser(codeResponse);
+    },
     onError: (error) => console.log("Login Failed:", error),
   });
 
+  const logingoogle = async () => {
+    console.log("Google login initiated"); // Debugging
+    login();
+  };
+
   useEffect(() => {
     const fetchData = async () => {
-      if (user && user.access_token) {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.access_token}`,
+              Accept: "application/json",
+            },
+          }
+        );
+
         try {
           setLoading(true);
-          const response = await axios.get(
-            `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${user.access_token}`,
+
+          const googleresponse = await fetch(
+            `${process.env.REACT_APP_API_KEY}/api/google/login/`,
             {
+              method: "POST",
               headers: {
-                Authorization: `Bearer ${user.access_token}`,
-                Accept: "application/json",
+                "Content-Type": "application/json",
               },
+              body: JSON.stringify({
+                username: response.data.name,
+              }),
             }
           );
 
-          try {
-            setLoading(true);
-
-            const googleresponse = await fetch(
-              "http://127.0.0.1:8000/api/google/login/",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  username: response.data.name,
-                }),
-              }
-            );
-
-            if (googleresponse.ok) {
-              const data = await googleresponse.json();
-              if (pathname) {
-                navigate(pathname);
-              } else {
-                navigate("/");
-              }
-              localStorage.setItem("username", data.username);
-              localStorage.setItem("authToken", data.token);
+          if (googleresponse.ok) {
+            const data = await googleresponse.json();
+            if (pathname) {
+              navigate(pathname);
             } else {
-              console.error("Login failed:", googleresponse.statusText);
-    
-              setError("Username or password is incorrect.");
-              setErrorModalVisible(true);
+              navigate("/");
             }
+            localStorage.setItem("username", data.username);
+            localStorage.setItem("authToken", data.token);
+          } else {
+            console.error("Login failed:", googleresponse.statusText);
 
-            setLoading(false);
-          } catch (err) {
-            setError("An error occurred during login");
+            setError("Username or password is incorrect.");
             setErrorModalVisible(true);
-
-            console.error(err);
-            setLoading(false);
           }
+
+          setLoading(false);
         } catch (err) {
-          console.error("Error fetching user profile:", err);
+          setError("An error occurred during login");
+          setErrorModalVisible(true);
+
+          console.error(err);
+          setLoading(false);
         }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
       }
-      setUser("");
     };
 
-    fetchData();
-  }, [user, username, navigate, pathname]);
+    if (user && user.access_token) {
+      fetchData();
+      setUser("");
+    }
+  }, [navigate, pathname, setUsernames, user, username]);
 
   return (
     <div className="sub_page">
@@ -211,37 +246,10 @@ const LoginForm = () => {
       <div className="d-none d-lg-block">
         <Navbar />
       </div>
-      {errorModalVisible && (
-        <Modal
-          className="modal_autehntication"
-          title={
-            <div>
-              {success ? (
-                <CheckCircleOutlined
-                  style={{ color: "green", marginRight: 8 }}
-                />
-              ) : (
-                <ExclamationCircleOutlined
-                  style={{ color: "#f5222d", marginRight: 8 }}
-                />
-              )}
 
-              {success ? "Success" : "Error"}
-            </div>
-          }
-          onOk={null}
-          footer={null}
-          width={300}
-          height={100}
-
-          // Set footer to null to hide buttons
-        >
-          <p>{success ? success : error}</p>
-        </Modal>
-      )}
       <div className="login_container">
         <div className="loading">
-          {loading && (
+          {/* {loading && (
             <RotatingLines
               strokeColor="#f57224"
               strokeWidth="5"
@@ -249,7 +257,7 @@ const LoginForm = () => {
               width="64"
               visible={true}
             />
-          )}
+          )} */}
         </div>
         <div className="header_brand_login">
           Welcome to Tanni Fashion House! Please login.
@@ -259,18 +267,15 @@ const LoginForm = () => {
             <div className="field">
               <label>Email*</label>
               <input
-                type="text"
-                name="username"
+                type="email"
+                name="email"
                 placeholder="Enter your email"
-                onChange={(event) => {
-                  setUsername(event.target.value);
-                  setUsernameerror("");
-                }}
+                onChange={handleChange}
                 required
                 onFocus={() => setUsernamefocused(true)}
                 onBlur={() => setUsernamefocused(false)}
                 style={{
-                  borderColor: usernameerror
+                  borderColor: usernameError
                     ? "red"
                     : usernamefocused
                     ? "black"
@@ -278,9 +283,9 @@ const LoginForm = () => {
                   border: "1px solid white",
                 }}
               />
-              {usernameerror && (
+              {usernameError && (
                 <div style={{ color: "red", fontSize: "12px" }}>
-                  {usernameerror}
+                  {usernameError}
                 </div>
               )}
             </div>
@@ -321,7 +326,11 @@ const LoginForm = () => {
                 )}
               </span>
             </div>
-            <Link className="forget_password" to={"/user/forget-password"}>
+            <Link
+              className="forget_password"
+              style={{ color: "#049cb9" }}
+              to={"/user/forget-password"}
+            >
               Forget Password?
             </Link>
             {/* {error && <p className="error">{error}</p>} */}
@@ -346,26 +355,24 @@ const LoginForm = () => {
                 }}
                 disabled={loading}
                 onClick={handleSubmit}
-                value="Login"
+                value={"Login"}
               />
             </label>
             <div className="login">Or login with</div>
 
             <label className="Google" htmlFor="google">
-              <i className="fab fa-google me-2">
-                <ImGooglePlus className="google_icon" />
-                <input
-                  type="button"
-                  id="google"
-                  style={{
-                    border: "none",
-                    background: "none",
-                    outline: "none",
-                  }}
-                  onClick={login}
-                  value="Google"
-                />
-              </i>
+              <ImGooglePlus className="google_icon" />
+              <input
+                type="button"
+                id="google"
+                style={{
+                  border: "none",
+                  background: "none",
+                  outline: "none",
+                }}
+                onClick={logingoogle}
+                value="Google"
+              />
             </label>
 
             <div className="signup">
@@ -374,6 +381,32 @@ const LoginForm = () => {
           </div>
         </div>
       </div>
+      <Modal
+        className="modal_autehntication"
+        title={
+          <div>
+            {success ? (
+              <CheckCircleOutlined style={{ color: "green", marginRight: 8 }} />
+            ) : (
+              <ExclamationCircleOutlined
+                style={{ color: "#f5222d", marginRight: 8 }}
+              />
+            )}
+
+            {success ? "Success" : "Error"}
+          </div>
+        }
+        visible={errorModalVisible}
+        onOk={null}
+        footer={null}
+        onCancel={() => setErrorModalVisible(false)}
+        width={300}
+        height={100}
+
+        // Set footer to null to hide buttons
+      >
+        <p>{success ? success : error}</p>
+      </Modal>
     </div>
   );
 };

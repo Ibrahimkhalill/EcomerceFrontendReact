@@ -6,13 +6,16 @@ import useUpdateUserOrder from "../components/UpdateCart";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { ToastContainer, toast } from "react-toastify";
 import { Button, Modal } from "antd";
+import { useCart } from "../components/CartContext";
+import { RotatingLines } from "react-loader-spinner";
 const Cart = () => {
   const authToken = localStorage.getItem("authToken");
   const updateUserOrder = useUpdateUserOrder();
   const [items, setItems] = useState([]);
   const [cartTotal, setcartTotal] = useState([]);
-  const [cartitems, setCartItems] = useState([]);
-
+  const [cartitems, setCartItem] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const { setCartItems } = useCart();
   useEffect(() => {
     sessionStorage.removeItem("redirectFrom");
     cartitemsdata();
@@ -21,20 +24,27 @@ const Cart = () => {
 
   const cartitemsdata = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Token ${authToken}`,
-        },
-      });
+      setLoading(true);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/cart-items/`,
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+        }
+      );
       const data = await response.json();
 
       // Extract data from the response
       const { items, carttotal, cartItems } = data;
       // Set state with the extracted data
+      console.log(cartItems);
       setItems(items);
       setCartItems(cartItems);
+      setCartItem(cartItems);
       setcartTotal(carttotal);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -56,7 +66,7 @@ const Cart = () => {
   const handleDeleteOrderItem = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/order/item/delete/${orderId}`,
+        `${process.env.REACT_APP_API_KEY}/api/order/item/delete/${orderId}`,
         {
           method: "delete",
           headers: {
@@ -76,158 +86,110 @@ const Cart = () => {
       console.error(error);
     }
   };
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
 
+    return () => clearTimeout(timeoutId);
+  }, []);
   return (
     <>
       <div className="sub_page">
         <Navbar Items={cartitems} />
         <ToastContainer autoClose={1000} />
-        <div className="container">
-          {cartitems ? (
-            <div className="row product_cart">
-              <div className="col-lg-12">
-                <div className="box-element first_element_box">
-                  <Link className="btn btn-outline-dark" to={"/"}>
-                    &#x2190; Continue Shopping
-                  </Link>
-                  <br />
-                  <br />
-                  <table className="table">
-                    <tr>
-                      <th>
-                        <h5>
-                          Item: <strong>{cartitems ? cartitems : 0}</strong>
-                        </h5>
-                      </th>
-                      <th>
-                        <h5>
-                          Total: <strong>{cartTotal ? cartTotal : 0}</strong>
-                        </h5>
-                      </th>
-                      <th>
-                        <Link
-                          style={{ float: "right", margin: "5px" }}
-                          className="btn btn-outline-success"
-                          to={"/checkout"}
-                        >
-                          Checkout
-                        </Link>
-                      </th>
-                    </tr>
-                  </table>
-                </div>
+        <div className="container ">
+          {loading ? (
+            <div className="loading_class">
+              <RotatingLines
+                strokeColor="#f57224"
+                strokeWidth="5"
+                animationDuration="0.75"
+                width="64"
+                visible={true}
+              />
+            </div>
+          ) : (
+            <>
+              {cartitems ? (
+                <div className="row product_cart">
+                  <div className="col-lg-12">
+                    <div className="box-element first_element_box">
+                      <Link className="btn btn-outline-dark" to={"/"}>
+                        &#x2190; Continue Shopping
+                      </Link>
+                      <br />
+                      <br />
+                      <table className="table">
+                        <tr>
+                          <th>
+                            <h5>
+                              Item: <strong>{cartitems ? cartitems : 0}</strong>
+                            </h5>
+                          </th>
+                          <th>
+                            <h5>
+                              Total:{" "}
+                              <strong>{cartTotal ? cartTotal : 0}</strong>
+                            </h5>
+                          </th>
+                          <th>
+                            <Link
+                              style={{ float: "right", margin: "5px" }}
+                              className="btn btn-outline-success"
+                              to={"/checkout"}
+                            >
+                              Checkout
+                            </Link>
+                          </th>
+                        </tr>
+                      </table>
+                    </div>
 
-                <br />
-                <div className="box-element cart_container">
-                  <div className="cart-row cart_row">
-                    <div style={{ flex: 2 }}>
-                      {" "}
-                      <strong>Image</strong>
-                    </div>
-                    <div style={{ flex: 2 }}>
-                      <strong>Item</strong>
-                    </div>
-                    <div className="cart_price" style={{ flex: 1 }}>
-                      <strong>Price</strong>
-                    </div>
-                    <div className="cart_section_quantity" style={{ flex: 1 }}>
-                      <strong>Quantity</strong>
-                    </div>
-                    <div className="cart_section_total" style={{ flex: 1 }}>
-                      <strong>Total</strong>
-                    </div>
-                    <div className="cart_section_total" style={{ flex: 1 }}>
-                      <strong>Remove</strong>
-                    </div>
-                  </div>
-                  {items &&
-                    items.length > 0 &&
-                    items.map((item, index) => (
-                      <>
-                        <div
-                          className="cart-row cart_container_bigscreen"
-                          key={index}
-                        >
-                          <div style={{ flex: 1 }}>
-                            <img
-                              className="row-image"
-                              src={`http://localhost:8000${item.variant?.image?.image}`}
-                              alt={item.variant?.product.name}
-                            />
-                          </div>
-                          <div style={{ flex: 2.2 }}>
-                            <p>{item.variant?.product.name}</p>
-                            <p className="color_family">
-                              Color Family: {item.variant?.image?.color?.name}
-                            </p>
-                            <p className="size_family">
-                              Size: {item.variant?.size?.name}
-                            </p>
-                          </div>
-                          <div style={{ flex: 1, marginRight:"10px", textAlign: "center" }}>
-                            <p>BDT: {item.variant?.price}</p>
-
-                           
-                          </div>
-                          <div className="main_qunatity" style={{ flex: 1 }}>
-                            <div className="quantity">
-                              <div className="Quantity_products">
-                                <button
-                                  style={{ marginRight: "-1vw" }}
-                                  onClick={() =>
-                                    updateUserOrderCart(
-                                      item.variant?.id,
-                                      "remove"
-                                    )
-                                  }
-                                >
-                                  -
-                                </button>
-                                <span
-                                  style={{
-                                    fontSize: "1vw",
-                                    marginLeft: "10px",
-                                  }}
-                                >
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  onClick={() =>
-                                    updateUserOrderCart(item.variant?.id, "add")
-                                  }
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div style={{ flex: 1 }}>BDT: {item.get_total}</div>
-                          <div className="delete_button" style={{ flex: .7 }}>
-                              <RiDeleteBin6Line
-                                className="delete_icon"
-                                onClick={() => handleDeleteItem(item.id)}
-                                data-toggle="modal"
-                                data-target="#exampleModalCenter"
-                              />
-                            </div>
+                    <br />
+                    <div className="box-element cart_container">
+                      <div className="cart-row cart_row">
+                        <div style={{ flex: 2 }}>
+                          {" "}
+                          <strong>Image</strong>
                         </div>
-                        <div className="responsive_div">
-                          <div className="cart-row cart_section" key={index}>
-                            <div className="image_name_section">
-                              <div
-                                className="image_section"
-                                style={{ flex: 2 }}
-                              >
+                        <div style={{ flex: 2 }}>
+                          <strong>Item</strong>
+                        </div>
+                        <div className="cart_price" style={{ flex: 1 }}>
+                          <strong>Price</strong>
+                        </div>
+                        <div
+                          className="cart_section_quantity"
+                          style={{ flex: 1 }}
+                        >
+                          <strong>Quantity</strong>
+                        </div>
+                        <div className="cart_section_total" style={{ flex: 1 }}>
+                          <strong>Total</strong>
+                        </div>
+                        <div className="cart_section_total" style={{ flex: 1 }}>
+                          <strong>Remove</strong>
+                        </div>
+                      </div>
+                      {items &&
+                        items.length > 0 &&
+                        items.map((item, index) => (
+                          <>
+                            <div
+                              className="cart-row cart_container_bigscreen"
+                              key={index}
+                            >
+                              <div style={{ flex: 1 }}>
                                 <img
                                   className="row-image"
-                                  src={`http://localhost:8000${item.variant?.image?.image}`}
+                                  src={`${process.env.REACT_APP_ClOUD}${item.variant?.image?.image}`}
                                   alt={item.variant?.product.name}
                                 />
                               </div>
-                              <div style={{ flex: 2, position: "relative" }}>
-                                <p className="product_name_section">
-                                  {item.variant?.product.name}
-                                </p>
+                              <div style={{ flex: 2.2 }}>
+                                <p>{item.variant?.product.name}</p>
                                 <p className="color_family">
                                   Color Family:{" "}
                                   {item.variant?.image?.color?.name}
@@ -235,34 +197,16 @@ const Cart = () => {
                                 <p className="size_family">
                                   Size: {item.variant?.size?.name}
                                 </p>
-                                <div className="watch_and_delete_div">
-                                  <RiDeleteBin6Line
-                                    className="delete_icon"
-                                    onClick={() => handleDeleteItem(item.id)}
-                                    data-toggle="modal"
-                                    data-target="#exampleModalCenter"
-                                  />
-                                </div>
                               </div>
-                            </div>
-                            <div className="second_coumn_image_section">
                               <div
-                                className="price_and_delete_section_cart"
-                                style={{ flex: 1 }}
-                              ></div>
-                              <p>
-                                <span
-                                  style={{
-                                    fontSize: "1.6rem",
-                                    color: "#f85606",
-                                    fontWeight: "bold",
-                                  }}
-                                >
-                                  ৳
-                                </span>{" "}
-                                {item.variant?.price}
-                              </p>
-
+                                style={{
+                                  flex: 1,
+                                  marginRight: "10px",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <p>BDT: {item.variant?.price}</p>
+                              </div>
                               <div
                                 className="main_qunatity"
                                 style={{ flex: 1 }}
@@ -283,9 +227,8 @@ const Cart = () => {
                                     <span
                                       style={{
                                         fontSize: "1vw",
-                                        marginRight: "-1vw",
+                                        marginLeft: "10px",
                                       }}
-                                      className="item_quantity"
                                     >
                                       {item.quantity}
                                     </span>
@@ -302,29 +245,159 @@ const Cart = () => {
                                   </div>
                                 </div>
                               </div>
-                              <div
-                                className="total_item_cart"
-                                style={{ flex: 1 }}
-                              >
+                              <div style={{ flex: 1 }}>
                                 BDT: {item.get_total}
                               </div>
+                              <div
+                                className="delete_button"
+                                style={{ flex: 0.7 }}
+                              >
+                                <RiDeleteBin6Line
+                                  className="delete_icon"
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  data-toggle="modal"
+                                  data-target="#exampleModalCenter"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </>
-                    ))}
+                            <div className="responsive_div">
+                              <div
+                                className="cart-row cart_section"
+                                key={index}
+                              >
+                                <div className="image_name_section">
+                                  <div
+                                    className="image_section"
+                                    style={{ flex: 2 }}
+                                  >
+                                    <img
+                                      className="row-image"
+                                      src={`${process.env.REACT_APP_ClOUD}${item.variant?.image?.image}`}
+                                      alt={item.variant?.product.name}
+                                    />
+                                  </div>
+                                  <div
+                                    style={{ flex: 2, position: "relative" }}
+                                  >
+                                    <p className="product_name_section">
+                                      {item.variant?.product.name}
+                                    </p>
+                                    <p className="color_family">
+                                      Color Family:{" "}
+                                      {item.variant?.image?.color?.name}
+                                    </p>
+                                    <p className="size_family">
+                                      Size: {item.variant?.size?.name}
+                                    </p>
+                                    <div className="watch_and_delete_div">
+                                      <RiDeleteBin6Line
+                                        className="delete_icon"
+                                        onClick={() =>
+                                          handleDeleteItem(item.id)
+                                        }
+                                        data-toggle="modal"
+                                        data-target="#exampleModalCenter"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="second_coumn_image_section">
+                                  <div
+                                    className="price_and_delete_section_cart"
+                                    style={{ flex: 1 }}
+                                  ></div>
+                                  <p>
+                                    <span
+                                      style={{
+                                        fontSize: "1.4rem",
+                                        color: "#f85606",
+                                      }}
+                                    >
+                                      ৳
+                                    </span>{" "}
+                                    <span style={{ fontSize: "15px" }}>
+                                      {item.variant?.price}
+                                    </span>
+                                  </p>
+
+                                  <div
+                                    className="main_qunatity"
+                                    style={{ flex: 1 }}
+                                  >
+                                    <div className="quantity">
+                                      <div className="Quantity_products">
+                                        <button
+                                          style={{ marginRight: "-1vw" }}
+                                          onClick={() =>
+                                            updateUserOrderCart(
+                                              item.variant?.id,
+                                              "remove"
+                                            )
+                                          }
+                                        >
+                                          -
+                                        </button>
+                                        <span
+                                          style={{
+                                            fontSize: "1vw",
+                                            marginRight: "-1vw",
+                                          }}
+                                          className="item_quantity"
+                                        >
+                                          {item.quantity}
+                                        </span>
+                                        <button
+                                          onClick={() =>
+                                            updateUserOrderCart(
+                                              item.variant?.id,
+                                              "add"
+                                            )
+                                          }
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div
+                                    className="total_item_cart"
+                                    style={{ flex: 1 }}
+                                  >
+                                    BDT: {item.get_total}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="cart_empty">
-              <div className="cart_empty_title">
-                There are no items in this cart
-              </div>
-              <Link to={"/"}>
-                <button>CONTINUE SHOPPING</button>
-              </Link>
-            </div>
+              ) : (
+                <div className="cart_empty">
+                  <object
+                    id="sc-empty-cart-animated-image"
+                    type="image/svg+xml"
+                    data="https://m.media-amazon.com/images/G/01/cart/empty/animated/rolling-cart-desaturated._CB405694243_.svg"
+                  >
+                    <img
+                      width={100}
+                      alt=""
+                      src="https://m.media-amazon.com/images/G/01/cart/empty/animated/cart-fallback-desaturated._CB405682035_.svg"
+                    />
+                  </object>
+                  <h2 class=" ">
+                    Your Tanni Fashion House Cart is empty
+                  </h2>
+                  <div className="cart_empty_title">
+                    There are no items in this cart
+                  </div>
+                  <Link to={"/"}>
+                    <button>CONTINUE SHOPPING</button>
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </div>
 

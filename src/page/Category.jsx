@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../css/cart.css";
 import Navbar from "./Navbar";
 import image from "../images/02aa318a32d615d3be93cf5264f8e46e.jpg_300x0q75.webp";
@@ -29,7 +29,7 @@ const Category = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        "http://127.0.0.1:8000/api/get-subcategory/"
+        `${process.env.REACT_APP_API_KEY}/api/get-subcategory/`
       );
       const data = await response.json();
       const { categories, subcategory } = data;
@@ -45,7 +45,7 @@ const Category = () => {
   const fetchWishListProduct = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/wishListProduct/getAll/",
+        `${process.env.REACT_APP_API_KEY}/api/wishListProduct/getAll/`,
         {
           headers: {
             "Content-type": "application/json",
@@ -74,7 +74,37 @@ const Category = () => {
     setactiveCategory("Just For You");
     setSubCategory(filterSubcategory);
   };
+  const navigate = useNavigate();
+  const handleSubcategoryClick = async (subcategory) => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/get-subcategory-product/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(subcategory.id),
+        }
+      );
+      const data = await response.json();
+      const { results } = data;
 
+      navigate(`/filter-product/?q=${subcategory.subcategory_name}`, {
+        state: { result: results },
+      });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
+
+    return () => clearTimeout(timeoutId);
+  }, []);
   return (
     <>
       <div className="sub_page">
@@ -105,13 +135,18 @@ const Category = () => {
                 </div>
               ))}
           </div>
+
           <div>
             <div className="subcategory_section_responsive">
               {subcategory &&
-                subcategory.map((data) => (
-                  <div className="category_image">
+                subcategory.map((data, index) => (
+                  <div
+                    className="category_image"
+                    key={index}
+                    onClick={() => handleSubcategoryClick(data)}
+                  >
                     <img
-                      src={`http://localhost:8000${data.image}`}
+                      src={`${process.env.REACT_APP_ClOUD}${data.image}`}
                       alt={subcategory.subcategory_name}
                     />
 

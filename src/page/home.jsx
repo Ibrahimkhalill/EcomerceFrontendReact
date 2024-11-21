@@ -23,8 +23,9 @@ const Product = () => {
   const [loading, setLoading] = useState(false);
   const [categories, SetCategory] = useState([]);
   const [subcategories, setSubCategory] = useState([]);
-  const [userData, setUserData] = useState("");
+
   const [display, setDisplay] = useState([]);
+  const [varintData, setVarinatData] = useState([]);
   const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -42,8 +43,8 @@ const Product = () => {
     },
     mobile: {
       breakpoint: { max: 464, min: 0 },
-      items: 1,
-      slidesToSlide: 2, // optional, default to 1.
+      items: 3,
+      slidesToSlide: 1, // optional, default to 1.
     },
   };
   useEffect(() => {
@@ -51,13 +52,16 @@ const Product = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await fetch("http://127.0.0.1:8000/api/get-products/");
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/get-products/`
+        );
         const data = await response.json();
-        const { products } = data;
+        const { products, variant } = data;
         setProducts(products);
-        setInterval(() => {
+        setVarinatData(variant);
+        setTimeout(() => {
           setLoading(false);
-        }, 500);
+        }, 1000);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -65,9 +69,8 @@ const Product = () => {
 
     const fetchcategory = async () => {
       try {
-        setLoading(true);
         const response = await fetch(
-          "http://127.0.0.1:8000/api/get-subcategory/"
+          `${process.env.REACT_APP_API_KEY}/api/get-subcategory/`
         );
         const data = await response.json();
         const { categories, subcategory } = data;
@@ -81,14 +84,12 @@ const Product = () => {
 
     const faetchdisplaymarketing = async () => {
       try {
-        setLoading(true);
         const response = await fetch(
-          "http://127.0.0.1:8000/api/get-displaymarketing/"
+          `${process.env.REACT_APP_API_KEY}/api/get-displaymarketing/`
         );
         const data = await response.json();
         const { display } = data;
         setDisplay(display);
-        // setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -102,23 +103,8 @@ const Product = () => {
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-          headers: {
-            "Content-type": "application/json",
-            Authorization: `Token ${authToken}`,
-          },
-        });
-        const data = await response.json();
-        const { cartItems } = data;
-        setCartItems(cartItems);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    const fetchUserDetails = async () => {
-      try {
         const response = await fetch(
-          "http://127.0.0.1:8000/api/user/details/getAll/",
+          `${process.env.REACT_APP_API_KEY}/api/cart-items/`,
           {
             headers: {
               "Content-type": "application/json",
@@ -127,13 +113,14 @@ const Product = () => {
           }
         );
         const data = await response.json();
-        setUserData(data);
+        const { cartItems } = data;
+        setCartItems(cartItems);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
+
     if (authToken) {
-      fetchUserDetails();
       fetchCartItems();
     }
   }, [authToken]);
@@ -166,7 +153,7 @@ const Product = () => {
   const handleSubcategoryClick = async (subcategory) => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/get-subcategory-product/",
+        `${process.env.REACT_APP_API_KEY}/api/get-subcategory-product/`,
         {
           method: "POST",
           headers: {
@@ -200,16 +187,30 @@ const Product = () => {
   //   const shuffledCategories = shuffleArray([...categories]);
   //   setShuffledCategories(shuffledCategories);
   // }, [categories]);
-  const [discountPrice, setDiscountprice] = useState(null);
 
   const calculateDiscount = (product) => {
     if (product?.discount) {
+      const price = handlePrice(product.id);
       const discountAmount =
-        (parseFloat(product?.price) * parseFloat(product?.discount)) / 100;
-      const discountedPrice = product?.price - discountAmount;
+        (parseFloat(price) * parseFloat(product?.discount)) / 100;
+      const discountedPrice = price - discountAmount;
       return Math.round(discountedPrice);
     }
   };
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  const handlePrice = (id) => {
+    const data = varintData.filter((item) => item.product?.id == id);
+    return data[0]?.price;
+  };
+
   return (
     <>
       <div className="sub_page">
@@ -235,7 +236,7 @@ const Product = () => {
                   >
                     <span className="img_icons_category">
                       <img
-                        src={`http://localhost:8000${category.icons}`}
+                        src={`${process.env.REACT_APP_ClOUD}${category.icons}`}
                         width={16}
                         alt=""
                       />{" "}
@@ -272,13 +273,14 @@ const Product = () => {
                 </div>
               ))}
             </div>
+
             <div className="box_elements_display">
               <CustomSlider>
                 {display.map((img, index) => {
                   return (
                     <img
                       key={index}
-                      src={`http://localhost:8000${img.image}`}
+                      src={`${process.env.REACT_APP_ClOUD}${img.image}`}
                       alt={img.name}
                     />
                   );
@@ -301,8 +303,8 @@ const Product = () => {
                 {t("category")}
               </div>
               {loading ? (
-                <div className="box_elements_categorys ">
-                  {[...Array(2)].map((_, index) => (
+                <div className="box_elements_loading_category ">
+                  {[...Array(6)].map((_, index) => (
                     <div
                       key={index}
                       className="Loader_subcategory_item_category "
@@ -322,6 +324,7 @@ const Product = () => {
                       arrows ={true}
                       responsive={responsive}
                     > */}
+
                     {subcategories.map((subcategory, index) => (
                       <button
                         key={index}
@@ -332,7 +335,7 @@ const Product = () => {
                           <div className="img_box_category">
                             <img
                               width={100}
-                              src={`http://localhost:8000${subcategory.image}`}
+                              src={`${process.env.REACT_APP_ClOUD}${subcategory.image}`}
                               alt={subcategory.subcategory_name}
                             />
                           </div>
@@ -343,6 +346,35 @@ const Product = () => {
                       </button>
                     ))}
                     {/* </Carousel> */}
+                  </div>
+
+                  <div className="courosel_responsive">
+                    <Carousel
+                      autoPlay
+                      arrows={false}
+                      infinite={true}
+                      responsive={responsive}
+                    >
+                      {subcategories.map((subcategory, index) => (
+                        <button
+                          style={{ outline: "none", border: "none" }}
+                          onClick={() => handleSubcategoryClick(subcategory)}
+                          key={index}
+                        >
+                          <div className="subcategory_item_category">
+                            <div className="img_box_category">
+                              <img
+                                src={`${process.env.REACT_APP_ClOUD}${subcategory.image}`}
+                                alt={subcategory.subcategory_name}
+                              />
+                            </div>
+                            <div className="category_name">
+                              {subcategory.subcategory_name}
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </Carousel>
                   </div>
                 </>
               )}
@@ -378,7 +410,7 @@ const Product = () => {
                       <div className="box">
                         <div className="img-box">
                           <img
-                            src={`http://localhost:8000${product.cover_image}?amp=1`}
+                            src={`${process.env.REACT_APP_ClOUD}${product.cover_image}?amp=1`}
                             alt={product.name}
                           />
                         </div>
@@ -392,7 +424,8 @@ const Product = () => {
                             >
                               ৳
                             </span>
-                            {calculateDiscount(product) || product.price}
+                            {calculateDiscount(product) ||
+                              handlePrice(product.id)}
                             {product.discount && (
                               <span class="origin-block ml-3">
                                 <span class="  pdp-price_type_deleted pdp-price_color_lightgray item-price-original">
@@ -402,7 +435,7 @@ const Product = () => {
                                   >
                                     ৳
                                   </span>{" "}
-                                  {product.price}
+                                  {handlePrice(product.id)}
                                 </span>
                               </span>
                             )}

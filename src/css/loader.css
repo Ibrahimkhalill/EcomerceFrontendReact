@@ -1,43 +1,37 @@
-.ring
-{
- 
+.ring {
   /* */
   position: absolute;
   left: 50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:80px;
-  height:80px;
-  background:transparent;
-  border:3px solid #e7e7e7;
-  border-radius:50%;
-  text-align:center;
-  line-height:75px;
-  font-family:sans-serif;
-  font-size:3.5vw;
-  color:#fdfcfc;
-  letter-spacing:3px;
-  text-transform:uppercase;
-  text-shadow:0 0 10px #818080;
-  font-family:'Titan One',cursive;
-  box-shadow:0 0 20px rgba(0,0,0,.5);
-
-  
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  background: transparent;
+  border: 3px solid #e7e7e7;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 75px;
+  font-family: sans-serif;
+  font-size: 3.5vw;
+  color: #fdfcfc;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px #818080;
+  font-family: "Titan One", cursive;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
-.ring:before
-{
-  content:'';
-  position:absolute;
-  top:-3px;
-  left:-3px;
-  width:100%;
-  height:100%;
-  border:3px solid transparent;
-  border-top:3px solid #796f6f;
-  border-right:3px solid #ada8a8;
-  border-radius:50%;
-  animation:animateC 1s linear infinite;
-  
+.ring:before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 100%;
+  height: 100%;
+  border: 3px solid transparent;
+  border-top: 3px solid #796f6f;
+  border-right: 3px solid #ada8a8;
+  border-radius: 50%;
+  animation: animateC 1s linear infinite;
 }
 /* .span
 {
@@ -51,24 +45,22 @@
   transform-origin:left;
   animation:animate 1s linear infinite;
 } */
-.background{
-    background-color: #f57224;
-    border-radius:50%;
-  position:absolute;
-  top:45%;
-  left:45%;
+.background {
+  background-color: #f57224;
+  border-radius: 50%;
+  position: absolute;
+  top: 45%;
+  left: 45%;
   width: 6vw;
   height: 12.4vh;
- 
 }
-.loader6{
+.loader6 {
   width: 315px;
   height: 200px;
-  background:
-      linear-gradient(0.25turn, transparent, #FFF, transparent),
-      linear-gradient(#DDD, #DDD),
-      radial-gradient(38px circle at 19px 19px, #DDD 50%, transparent 51%),
-      linear-gradient(#DDD, #DDD);
+  background: linear-gradient(0.25turn, transparent, #fff, transparent),
+    linear-gradient(#ddd, #ddd),
+    radial-gradient(38px circle at 19px 19px, #ddd 50%, transparent 51%),
+    linear-gradient(#ddd, #ddd);
   background-color: #fff;
   background-repeat: no-repeat;
   background-size: 315px 200px, 315px 130px, 100px 100px, 225px 30px;
@@ -77,32 +69,57 @@
 }
 
 @keyframes loading1 {
-to {
-  background-position: 315px 0, 0 0, 15px 140px, 65px 145px;
+  to {
+    background-position: 315px 0, 0 0, 15px 140px, 65px 145px;
+  }
 }
+.display_loader {
+  width: 100%;
+  height: 10vh;
+  display: block;
+  margin: auto;
+  position: relative;
+  background: #fff;
+  box-sizing: border-box;
 }
-
-
+.display_loader::after{
+  content: "";
+  width: calc(100% - 30px);
+  height: calc(100% - 30px);
+  top: 15px;
+  left: 15px;
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: 75px 175px, 100% 100px, 80% 16px, 80% 16px;
+  background-position: -185px 0, center 10px, center 125px, center 155px;
+  box-sizing: border-box;
+  animation: animloader5 1s linear infinite;
+}
 .loader5 {
   width: 100%;
   height: 215px;
   display: block;
   margin: auto;
   position: relative;
-  background: #FFF;
+  background: #fff;
   box-sizing: border-box;
 }
 .loader5::after {
-  content: '';
+  content: "";
   width: calc(100% - 30px);
   height: calc(100% - 30px);
   top: 15px;
   left: 15px;
   position: absolute;
-  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-   radial-gradient(circle 50px , #DDD 100%, transparent 0),
-   linear-gradient(#DDD 16px, transparent 0),
-   linear-gradient(#DDD 24px, transparent 0);
+  background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    ),
+    radial-gradient(circle 50px, #ddd 100%, transparent 0),
+    linear-gradient(#ddd 16px, transparent 0),
+    linear-gradient(#ddd 24px, transparent 0);
   background-repeat: no-repeat;
   background-size: 75px 175px, 100% 100px, 80% 16px, 80% 16px;
   background-position: -185px 0, center 10px, center 125px, center 155px;
@@ -121,31 +138,31 @@ to {
   display: block;
   margin: auto;
   position: relative;
-  background: #FFF;
+  background: #fff;
   box-sizing: border-box;
 }
 .loader4::after {
-  content: '';
+  content: "";
   width: calc(100% - 30px);
   height: calc(100% - 15px);
   top: 15px;
   left: 15px;
   position: absolute;
-  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5) 50%, transparent 100%),
-   linear-gradient(#DDD 100px, transparent 0),
-   linear-gradient(#DDD 16px, transparent 0),
-   linear-gradient(#DDD 50px, transparent 0);
+  background-image: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    ),
+    linear-gradient(#ddd 100px, transparent 0),
+    linear-gradient(#ddd 16px, transparent 0),
+    linear-gradient(#ddd 50px, transparent 0);
   background-repeat: no-repeat;
   background-size: 75px 175px, 100% 100px, 100% 16px, 100% 30px;
   background-position: -185px 0, center 0, center 115px, center 142px;
   box-sizing: border-box;
   animation: animloader3 1s linear infinite;
 }
-
-
-
-
-
 
 .loader {
   width: 215px;
@@ -165,17 +182,26 @@ to {
   margin: auto;
   display: block;
   position: relative;
-  background: #FFF;
+  background: #fff;
   box-sizing: border-box;
 }
 .loader2::after {
-  content: '';  
+  content: "";
   width: calc(100% - 30px);
   height: calc(100% - 30px);
   top: 15px;
   left: 15px;
   position: absolute;
-  background-image: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5) 50%, transparent 80%), linear-gradient(#DDD 56px, transparent 0), linear-gradient(#DDD 24px, transparent 0), linear-gradient(#DDD 18px, transparent 0), linear-gradient(#DDD 66px, transparent 0);
+  background-image: linear-gradient(
+      100deg,
+      transparent,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 80%
+    ),
+    linear-gradient(#ddd 56px, transparent 0),
+    linear-gradient(#ddd 24px, transparent 0),
+    linear-gradient(#ddd 18px, transparent 0),
+    linear-gradient(#ddd 66px, transparent 0);
   background-repeat: no-repeat;
   background-size: 75px 130px, 55px 56px, 160px 30px, 260px 20px, 290px 56px;
   background-position: 0% 0, 0 0, 70px 5px, 70px 38px, 0px 66px;
@@ -186,7 +212,16 @@ to {
   width: 360px;
   height: 100px;
   display: block;
-  background-image: linear-gradient(100deg, transparent, rgba(38, 50, 56, 0.5) 50%, transparent 80%), linear-gradient(#FFF 100px, transparent 0), linear-gradient(#FFF 20px, transparent 0), linear-gradient(#FFF 20px, transparent 0), linear-gradient(#FFF 20px, transparent 0);
+  background-image: linear-gradient(
+      100deg,
+      transparent,
+      rgba(38, 50, 56, 0.5) 50%,
+      transparent 80%
+    ),
+    linear-gradient(#fff 100px, transparent 0),
+    linear-gradient(#fff 20px, transparent 0),
+    linear-gradient(#fff 20px, transparent 0),
+    linear-gradient(#fff 20px, transparent 0);
   background-repeat: no-repeat;
   background-size: 75px 100px, 100px 100px, 125px 20px, 260px 20px, 260px 20px;
   background-position: -50% 0, 0 0, 120px 0, 120px 40px, 120px 80px, 120px 120px;
@@ -203,7 +238,8 @@ to {
     background-position: 0% 0, 0 0, 120px 0, 120px 40px, 120px 80px, 120px 120px;
   }
   100% {
-    background-position: 100% 0, 0 0, 120px 0, 120px 40px, 120px 80px, 120px 120px;
+    background-position: 100% 0, 0 0, 120px 0, 120px 40px, 120px 80px,
+      120px 120px;
   }
 }
 
@@ -216,26 +252,20 @@ to {
   }
 }
 
-@keyframes animateC
-{
-  0%
-  {
-    transform:rotate(0deg);
+@keyframes animateC {
+  0% {
+    transform: rotate(0deg);
   }
-  100%
-  {
-    transform:rotate(360deg);
+  100% {
+    transform: rotate(360deg);
   }
 }
-@keyframes animate
-{
-  0%
-  {
-    transform:rotate(45deg);
+@keyframes animate {
+  0% {
+    transform: rotate(45deg);
   }
-  100%
-  {
-    transform:rotate(405deg);
+  100% {
+    transform: rotate(405deg);
   }
 }
 
@@ -244,3 +274,24 @@ to {
     background-position: 215px 0, 0 0, 15px 150px, 15px 180px;
   }
 }
+
+
+.loader_loading {
+  width: 25px;
+  height: 25px;
+  border: 5px solid;
+  border-color: #fff transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+} 

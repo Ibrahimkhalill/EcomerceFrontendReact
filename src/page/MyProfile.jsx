@@ -5,12 +5,11 @@ import Navbar from "./Navbar";
 import { FiEye } from "react-icons/fi";
 import { PiEyeClosed } from "react-icons/pi";
 
-
 import { ToastContainer, toast } from "react-toastify";
 import { SlHeart } from "react-icons/sl";
 import FooterResponsive from "../components/FooterResponsive";
 // import Footer from './Footer';
-
+import { RotatingLines } from "react-loader-spinner";
 const MyP = () => {
   const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
@@ -28,6 +27,7 @@ const MyP = () => {
   const [errorModalVisible, setErrorModalVisible] = useState(false); // Add error modal visibility state
   const [passwordfocused, setPasswordFocused] = useState(false);
   const [passworderror, setPassworderror] = useState("");
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     sessionStorage.removeItem("redirectFrom");
     MyOrderitemsdata();
@@ -51,12 +51,16 @@ const MyP = () => {
   };
   const MyOrderitemsdata = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Token ${authToken}`,
-        },
-      });
+      setLoading(true);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/cart-items/`,
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+        }
+      );
       const data = await response.json();
 
       // Extract data from the response
@@ -66,14 +70,16 @@ const MyP = () => {
       setCartItems(cartItems);
       setcartTotal(carttotal);
       setUser(user);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      setLoading(false);
     }
   };
   const fetchUserDetails = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/user/details/getAll/",
+        `${process.env.REACT_APP_API_KEY}/api/user/details/getAll/`,
         {
           headers: {
             "Content-type": "application/json",
@@ -90,7 +96,7 @@ const MyP = () => {
   const fetchOrderDetails = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/shipping/address/getAll/",
+        `${process.env.REACT_APP_API_KEY}/api/shipping/address/getAll/`,
         {
           headers: {
             "Content-type": "application/json",
@@ -113,7 +119,16 @@ const MyP = () => {
   const handlevisibleFalse = () => {
     setVisible(false);
   };
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
+
+    return () => clearTimeout(timeoutId);
+  }, []);
+
   const [modalVisible, setModalVisible] = useState(false);
 
   async function handleSubmit(e) {
@@ -169,18 +184,22 @@ const MyP = () => {
         oldpassword: password,
         newpassword: password1,
       };
-      const response = await fetch("http://127.0.0.1:8000/password/change/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${authToken}`,
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/password/change/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       if (response.status === 200) {
         const data = await response.json();
         toast(data.message);
+        setVisible(false);
       } else {
         const data = await response.json();
         console.log("Response text:", data);
@@ -202,156 +221,173 @@ const MyP = () => {
         <Navbar MyOrderItems={cartitems} />
         <ToastContainer autoClose={1000} />
         <div className="container">
-          {authToken ? (
-            <div className="row product_MyOrder">
-              <div className="col-lg-2 account_nav ">
-                <div className="username">Hello, {UserData.username}</div>
-                <div className="account_nav_list">
-                  <Link onClick={handlevisibleFalse}>My Profile</Link>
-                  <Link to={"/account/my-order"}>My Order</Link>
-                  <Link to={"/account/my-wishlist"}>My Wishlist</Link>
-                </div>
+          <div
+            className={`${
+              loading
+                ? "product_MyOrder_loading"
+                : "row product_MyOrder full-70"
+            } `}
+          >
+            {loading ? (
+              <div className="loading ">
+                <RotatingLines
+                  strokeColor="#f57224"
+                  strokeWidth="5"
+                  animationDuration="0.75"
+                  width="64"
+                  visible={true}
+                />
               </div>
+            ) : (
+              <>
+                <div className="col-lg-2 account_nav ">
+                  <div className="username">Hello, {UserData.username}</div>
+                  <div className="account_nav_list">
+                    <Link onClick={handlevisibleFalse}>My Profile</Link>
+                    <Link to={"/account/my-order"}>My Order</Link>
+                    <Link to={"/account/my-wishlist"}>My Wishlist</Link>
+                  </div>
+                </div>
 
-              <div className="col-lg-9">
-                <h4 className="order_title mb-3 ml-1">
-                  {visible ? "Change Password" : "My Profile"}
-                </h4>
-                <div className="box-element" style={{ marginTop: "10px" }}>
-                  {visible ? (
-                    <div>
-                      <div className="my_password_change">
-                        <label htmlFor="password1">Current Password*</label>
-                        <input
-                          id="password1"
-                          type={passwordVisible ? "text" : "password"}
-                          className="pass-key"
-                          placeholder="enter your current password"
-                          onChange={(event) => {
-                            setPassword(event.target.value);
-                            setPassworderror("");
-                          }}
-                          onFocus={() => setPasswordFocused(true)}
-                          onBlur={() => setPasswordFocused(false)}
-                          style={{
-                            borderColor: passworderror
-                              ? "red"
-                              : passwordfocused
-                              ? "black"
-                              : "",
-                            border: "1px solid white",
-                          }}
-                        />
-                        {passworderror && (
-                          <div style={{ color: "red", fontSize: "12px" }}>
-                            {passworderror}
-                          </div>
-                        )}
-
-                        <span
-                          className="show_password responsive_show_password"
-                          onClick={togglePasswordVisibility}
-                        >
-                          {passwordVisible ? (
-                            <FiEye style={{ fontSize: "1.2rem" }} />
-                          ) : (
-                            <PiEyeClosed style={{ fontSize: "1.3rem" }} />
-                          )}
-                        </span>
-                      </div>
-                      <div className="my_password_change">
-                        <label htmlFor="">New Password*</label>
-                        <input
-                          placeholder="enter new password"
-                          type={password1Visible ? "text" : "password"}
-                          className="pass-key"
-                          onChange={(event) => {
-                            setPassword1(event.target.value);
-                            setpassword1Error("");
-                          }}
-                          style={{
-                            borderColor: password1Error ? "red" : "",
-
-                            border: "1px solid white",
-                          }}
-                        />
-                        {password1Error && (
-                          <div style={{ color: "red", fontSize: "12px" }}>
-                            {password1Error}
-                          </div>
-                        )}
-                        <span
-                          className="show_password responsive_show_password"
-                          onClick={togglePassword1Visibility}
-                        >
-                          {password1Visible ? (
-                            <FiEye style={{ fontSize: "1.2rem" }} />
-                          ) : (
-                            <PiEyeClosed style={{ fontSize: "1.3rem" }} />
-                          )}
-                        </span>
-                      </div>
-                      <div className="my_password_change">
-                        <label htmlFor="">Retype Password*</label>
-                        <input
-                          type={password2Visible ? "text" : "password"}
-                          className="pass-key"
-                          placeholder="please retype your password"
-                          onChange={(event) => {
-                            setPassword2(event.target.value);
-                            setError("");
-                          }}
-                          style={{
-                            borderColor: error ? "red" : "",
-
-                            border: "1px solid white",
-                          }}
-                        />
-                        {error && (
-                          <div style={{ color: "red", fontSize: "12px" }}>
-                            {error}
-                          </div>
-                        )}
-                        <span
-                          className="show_password responsive_show_password"
-                          onClick={togglePassword2Visibility}
-                        >
-                          {password2Visible ? (
-                            <FiEye style={{ fontSize: "1.2rem" }} />
-                          ) : (
-                            <PiEyeClosed style={{ fontSize: "1.3rem" }} />
-                          )}
-                        </span>
-                      </div>
-                      <div className="my_password_change">
-                        <button onClick={handleSubmit}>SAVE CHANGES</button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="my_profile_details">
-                      <div>Full Name : {user.username}</div>
-                      <div>Email Address : {user.email}</div>
-                      <div>Mobile Number : {user.phone_number}</div>
-                      <div>
-                        <button onClick={handlevisible}>CHANGE PASSWORD</button>
-                      </div>
-                    </div>
+                <div className="col-lg-9">
+                  {visible && (
+                    <button
+                      className="ml-1 back_button_my_profile"
+                      onClick={handlevisibleFalse}
+                    >
+                      Back
+                    </button>
                   )}
+                  <h4 className="order_title mb-3 ml-1">
+                    {visible ? "Change Password" : "My Profile"}
+                  </h4>
+                  <div className="box-element" style={{ marginTop: "10px" }}>
+                    {visible ? (
+                      <div>
+                        <div className="my_password_change">
+                          <label htmlFor="password1">Current Password*</label>
+                          <input
+                            id="password1"
+                            type={passwordVisible ? "text" : "password"}
+                            className="pass-key"
+                            placeholder="enter your current password"
+                            onChange={(event) => {
+                              setPassword(event.target.value);
+                              setPassworderror("");
+                            }}
+                            onFocus={() => setPasswordFocused(true)}
+                            onBlur={() => setPasswordFocused(false)}
+                            style={{
+                              borderColor: passworderror
+                                ? "red"
+                                : passwordfocused
+                                ? "black"
+                                : "",
+                              border: "1px solid white",
+                            }}
+                          />
+                          {passworderror && (
+                            <div style={{ color: "red", fontSize: "12px" }}>
+                              {passworderror}
+                            </div>
+                          )}
+
+                          <span
+                            className="show_password responsive_show_password"
+                            onClick={togglePasswordVisibility}
+                          >
+                            {passwordVisible ? (
+                              <FiEye style={{ fontSize: "1.2rem" }} />
+                            ) : (
+                              <PiEyeClosed style={{ fontSize: "1.3rem" }} />
+                            )}
+                          </span>
+                        </div>
+                        <div className="my_password_change">
+                          <label htmlFor="">New Password*</label>
+                          <input
+                            placeholder="enter new password"
+                            type={password1Visible ? "text" : "password"}
+                            className="pass-key"
+                            onChange={(event) => {
+                              setPassword1(event.target.value);
+                              setpassword1Error("");
+                            }}
+                            style={{
+                              borderColor: password1Error ? "red" : "",
+
+                              border: "1px solid white",
+                            }}
+                          />
+                          {password1Error && (
+                            <div style={{ color: "red", fontSize: "12px" }}>
+                              {password1Error}
+                            </div>
+                          )}
+                          <span
+                            className="show_password responsive_show_password"
+                            onClick={togglePassword1Visibility}
+                          >
+                            {password1Visible ? (
+                              <FiEye style={{ fontSize: "1.2rem" }} />
+                            ) : (
+                              <PiEyeClosed style={{ fontSize: "1.3rem" }} />
+                            )}
+                          </span>
+                        </div>
+                        <div className="my_password_change">
+                          <label htmlFor="">Retype Password*</label>
+                          <input
+                            type={password2Visible ? "text" : "password"}
+                            className="pass-key"
+                            placeholder="please retype your password"
+                            onChange={(event) => {
+                              setPassword2(event.target.value);
+                              setError("");
+                            }}
+                            style={{
+                              borderColor: error ? "red" : "",
+
+                              border: "1px solid white",
+                            }}
+                          />
+                          {error && (
+                            <div style={{ color: "red", fontSize: "12px" }}>
+                              {error}
+                            </div>
+                          )}
+                          <span
+                            className="show_password responsive_show_password"
+                            onClick={togglePassword2Visibility}
+                          >
+                            {password2Visible ? (
+                              <FiEye style={{ fontSize: "1.2rem" }} />
+                            ) : (
+                              <PiEyeClosed style={{ fontSize: "1.3rem" }} />
+                            )}
+                          </span>
+                        </div>
+                        <div className="my_password_change">
+                          <button onClick={handleSubmit}>SAVE CHANGES</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="my_profile_details">
+                        <div>Full Name : {user.username}</div>
+                        <div>Email Address : {user.email}</div>
+                        <div>Mobile Number : {user.phone_number}</div>
+                        <div>
+                          <button onClick={handlevisible}>
+                            CHANGE PASSWORD
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="my_wishlist_empty">
-              <div className="my_wishlist_empty_title">
-                <SlHeart size={25} />
-                <p>There are no favorites yet.</p>
-                <p>Add your favorites to wishlist and they will show here.</p>
-              </div>
-              <Link to={"/"}>
-                <button>CONTINUE SHOPPING</button>
-              </Link>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
       {modalVisible && (

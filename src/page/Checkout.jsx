@@ -4,15 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../components/CartContext";
 import "../css/cart.css";
 import Navbar from "./Navbar";
-import Rating from "./Rating";
-import bkash from "../images/BKash-Icon-Logo.wine.svg";
-import cashon from "../images/cash-on-delivery.svg";
-import Nagad from "../images/Nagad-Vertical-Logo.wine.svg";
+// import Rating from "./Rating";
+// import bkash from "../images/BKash-Icon-Logo.wine.svg";
+// import cashon from "../images/cash-on-delivery.svg";
+// import Nagad from "../images/Nagad-Vertical-Logo.wine.svg";
 import { toast, ToastContainer } from "react-toastify";
-import division from "../components/divisions.json";
-import district from "../components/districts.json";
-import upzila from "../components/upazilas.json";
-import OrderConfirm from "./OrderConfirm";
+// import division from "../components/divisions.json";
+// import district from "../components/districts.json";
+// import upzila from "../components/upazilas.json";
+import { RotatingLines } from "react-loader-spinner";
 const Checkout = React.memo(() => {
   const authToken = localStorage.getItem("authToken");
   const [items, setItems] = useState([]);
@@ -21,43 +21,44 @@ const Checkout = React.memo(() => {
   const [statusData, setStausData] = useState([]);
   const [deliveryData, setDeliveryData] = useState([]);
   const [deliveryFee, setDeliveryFee] = useState(null);
-  const [deliveryFeeID, setDeliveryFeeID] = useState(null);
+  const [selectArea, setSelectArea] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     address: "",
-    division: "",
-    district: "",
-    upazila: "",
     number: "",
     total: null,
     status: "Pending",
     delivery_id: "",
   });
-  const [selectedDiviison, setSelectedDivision] = useState("");
-  const [filterDistrictData, setFilterDistrictData] = useState([]);
-  const [filterUpzilaData, setFilterUpzilaData] = useState([]);
-  const [selecteDistrict, setSelectedDistrict] = useState("");
-  const [upzaila_name, setUpzailaName] = useState("");
+  // const [selectedDiviison, setSelectedDivision] = useState("");
+  // const [filterDistrictData, setFilterDistrictData] = useState([]);
+  // const [filterUpzilaData, setFilterUpzilaData] = useState([]);
+  // const [selecteDistrict, setSelectedDistrict] = useState("");
+  // const [upzaila_name, setUpzailaName] = useState("");
   const [showButton, setShowButton] = useState(true);
-  const [showPaymentInfo, setShowPaymentInfo] = useState(false);
-  const [showOderConfirmPage, setShowOrderConfirmPage] = useState(false);
-  const [showconfirmbutton, setShowConfirmButton] = useState(false);
-  const [productRating, setProductRating] = useState(0);
+  // const [showPaymentInfo, setShowPaymentInfo] = useState(false);
+  // const [showOderConfirmPage, setShowOrderConfirmPage] = useState(false);
+  // const [showconfirmbutton, setShowConfirmButton] = useState(false);
+  // const [productRating, setProductRating] = useState(0);
   const { setCartItems } = useCart();
-  const handleRatingChange = (newRating) => {
-    setProductRating(newRating);
-  };
+  // const handleRatingChange = (newRating) => {
+  //   setProductRating(newRating);
+  // };
 
   const fetchCartItems = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Token ${authToken}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/cart-items/`,
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+        }
+      );
       const data = await response.json();
 
       const { cartItems, carttotal, items, status, delivery } = data;
@@ -73,45 +74,45 @@ const Checkout = React.memo(() => {
     }
   };
 
-  const handleDivisionChange = (e) => {
-    const districtId = e.target.value;
+  // const handleDivisionChange = (e) => {
+  //   const districtId = e.target.value;
 
-    setSelectedDivision(districtId);
-    const filter_division = division.map((data) =>
-      data.data.find((div) => div.id == districtId)
-    );
+  //   setSelectedDivision(districtId);
+  //   const filter_division = division.map((data) =>
+  //     data.data.find((div) => div.id == districtId)
+  //   );
 
-    setFormData({
-      ...formData,
-      division: filter_division.length > 0 ? filter_division[0]?.name : "",
-    });
-  };
-  const handleDistrictChange = (e) => {
-    const districtId = e.target.value;
+  //   setFormData({
+  //     ...formData,
+  //     division: filter_division.length > 0 ? filter_division[0]?.name : "",
+  //   });
+  // };
+  // const handleDistrictChange = (e) => {
+  //   const districtId = e.target.value;
 
-    setSelectedDistrict(districtId);
-    const filter_division = district.map((data) =>
-      data.data.find((div) => div.id == districtId)
-    );
+  //   setSelectedDistrict(districtId);
+  //   const filter_division = district.map((data) =>
+  //     data.data.find((div) => div.id == districtId)
+  //   );
 
-    setFormData({
-      ...formData,
-      district: filter_division.length > 0 ? filter_division[0]?.name : "",
-    });
-  };
+  //   setFormData({
+  //     ...formData,
+  //     district: filter_division.length > 0 ? filter_division[0]?.name : "",
+  //   });
+  // };
 
-  const handleUpzilaChange = (e) => {
-    const districtId = e.target.value;
+  // const handleUpzilaChange = (e) => {
+  //   const districtId = e.target.value;
 
-    const filter_division = upzila.map((data) =>
-      data.data.find((div) => div.id == districtId)
-    );
-    setUpzailaName(filter_division[0]?.name);
-    setFormData({
-      ...formData,
-      upazila: filter_division.length > 0 ? filter_division[0]?.name : "",
-    });
-  };
+  //   const filter_division = upzila.map((data) =>
+  //     data.data.find((div) => div.id == districtId)
+  //   );
+  //   setUpzailaName(filter_division[0]?.name);
+  //   setFormData({
+  //     ...formData,
+  //     upazila: filter_division.length > 0 ? filter_division[0]?.name : "",
+  //   });
+  // };
   useEffect(() => {
     sessionStorage.removeItem("redirectFrom");
     fetchCartItems();
@@ -119,37 +120,37 @@ const Checkout = React.memo(() => {
   }, []);
 
   useEffect(() => {
-    const filterDistrict = district.map((data) =>
-      data.data.filter((item) => item.division_id == selectedDiviison)
-    );
+    // const filterDistrict = district.map((data) =>
+    //   data.data.filter((item) => item.division_id == selectedDiviison)
+    // );
     const filterDeliveryFee =
-      deliveryData &&
-      deliveryData.find((data) => data.address == formData.division);
-    setFilterDistrictData(filterDistrict);
+      deliveryData && deliveryData.find((data) => data.address === selectArea);
+    // setFilterDistrictData(filterDistrict);
     setDeliveryFee(filterDeliveryFee?.fee);
     setFormData({
       ...formData,
       delivery_id: filterDeliveryFee?.id,
     });
-  }, [selectedDiviison]);
+    console.log(selectArea);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectArea]);
 
-  useEffect(() => {
-    const filterDistrict = upzila.map((data) =>
-      data.data.filter((item) => item.district_id == selecteDistrict)
-    );
-    setFilterUpzilaData(filterDistrict);
-  }, [selecteDistrict]);
+  // useEffect(() => {
+  //   const filterDistrict = upzila.map((data) =>
+  //     data.data.filter((item) => item.district_id == selecteDistrict)
+  //   );
+  //   setFilterUpzilaData(filterDistrict);
+  // }, [selecteDistrict]);
 
-  const handlecontinue = () => {
-    if (cartitems) {
-      setShowButton(false);
-      setShowPaymentInfo(true);
-    } else {
-      toast.warning("please first add to cart");
-    }
-  };
+  // const handlecontinue = () => {
+  //   if (cartitems) {
+  //     setShowButton(false);
+  //     setShowPaymentInfo(true);
+  //   } else {
+  //     toast.warning("please first add to cart");
+  //   }
+  // };
   const handlesubmit = async () => {
-    console.log("lklkj");
     if (!cartitems) {
       toast.warning("please first add to cart");
       return;
@@ -157,9 +158,7 @@ const Checkout = React.memo(() => {
     if (
       formData.name === "" &&
       formData.number === "" &&
-      formData.division === "" &&
-      formData.upazila === "" &&
-      formData.address === ""
+      (formData.address === "") & selectArea
     ) {
       setError("can't leave empty");
       return;
@@ -172,29 +171,29 @@ const Checkout = React.memo(() => {
       setError("can't leave empty");
       return;
     }
-    if (formData.division === "") {
+    if (selectArea === "") {
       setError("can't leave empty");
       return;
     }
-    if (formData.upazila === "") {
-      setError("can't leave empty");
-      return;
-    }
+
     if (formData.address === "") {
       setError("can't leave empty");
       return;
     }
-    console.log("kkjlgsdg");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/place-order/", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Token ${authToken}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      setLoading(true);
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/place-order/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
       if (response.status === 200) {
@@ -202,9 +201,6 @@ const Checkout = React.memo(() => {
         setFormData({
           name: "",
           address: "",
-          division: "",
-          district: "",
-          upazila: "",
           number: "",
           total: null,
           status: "Pending",
@@ -215,11 +211,20 @@ const Checkout = React.memo(() => {
       } else {
         toast.error(data);
       }
+      setLoading(false);
     } catch (error) {
       console.error(error);
+      setLoading(false);
     }
   };
+  useEffect(() => {
+    const scrollToTop = () => {
+      window.scrollTo(0, 0);
+    };
+    const timeoutId = setTimeout(scrollToTop, 100); // Adjust the delay time as needed
 
+    return () => clearTimeout(timeoutId);
+  }, []);
   return (
     <>
       <>
@@ -230,205 +235,246 @@ const Checkout = React.memo(() => {
           <div className="container checkout_container">
             <div className="row">
               <div className="col-lg-6">
-                <div className="box-element" id="form-wrapper">
-                  <div id="shipping-info">
-                    <hr />
-                    <p>Shipping Information:</p>
-
-                    <form id="form">
+                <>
+                  <div className="box-element" id="form-wrapper">
+                    <div id="shipping-info">
                       <hr />
-                      <div className="form-field">
-                        <input
-                          required
-                          className="form-control"
-                          type="text"
-                          name="name"
-                          placeholder="Name.."
-                          onChange={(e) =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                          style={{
-                            borderColor:
-                              error && formData.name === "" ? "red" : "#ccc",
-                            border: "1px solid #ccc",
-                          }}
-                        />
-                        {error && formData.name === "" && (
-                          <div
-                            className="error_message_checkout"
-                            style={{ color: "red", fontSize: "12px" }}
-                          >
-                            {error}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-field">
-                        <input
-                          required
-                          className="form-control"
-                          type="text"
-                          name="number"
-                          placeholder="number.."
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              number: e.target.value,
-                            })
-                          }
-                          style={{
-                            borderColor:
-                              error && formData.number === "" ? "red" : "#ccc",
-                            border: "1px solid #ccc",
-                          }}
-                        />
-                        {error && formData.number === "" && (
-                          <div
-                            className="error_message_checkout"
-                            style={{ color: "red", fontSize: "12px" }}
-                          >
-                            {error}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-field">
-                        <select
-                          id="divisionelect"
-                          className="form-control"
-                          value={selectedDiviison}
-                          onChange={handleDivisionChange}
-                          style={{
-                            borderColor:
-                              error && formData.division === ""
-                                ? "red"
-                                : "#ccc",
-                            border: "1px solid #ccc",
-                          }}
-                        >
-                          <option value="" disabled>
-                            Select a Divsion...
-                          </option>
-                          {division.map((item, index) =>
-                            item.data.map((div) => (
-                              <option key={index} value={`${div.id}`}>
-                                {div.name}
-                              </option>
-                            ))
+                      <p>Shipping Information:</p>
+
+                      <form id="form">
+                        <hr />
+                        <div className="form-field">
+                          <input
+                            required
+                            className="form-control"
+                            type="text"
+                            name="name"
+                            placeholder="Name.."
+                            onChange={(e) =>
+                              setFormData({ ...formData, name: e.target.value })
+                            }
+                            style={{
+                              borderColor:
+                                error && formData.name === "" ? "red" : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
+                          />
+                          {error && formData.name === "" && (
+                            <div
+                              className="error_message_checkout"
+                              style={{ color: "red", fontSize: "12px" }}
+                            >
+                              {error}
+                            </div>
                           )}
-                        </select>
-                        {error && formData.division === "" && (
-                          <div
-                            className="error_message_checkout"
-                            style={{ color: "red", fontSize: "12px" }}
+                        </div>
+                        <div className="form-field">
+                          <input
+                            required
+                            className="form-control"
+                            type="text"
+                            name="number"
+                            placeholder="number.."
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                number: e.target.value,
+                              })
+                            }
+                            style={{
+                              borderColor:
+                                error && formData.number === ""
+                                  ? "red"
+                                  : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
+                          />
+                          {error && formData.number === "" && (
+                            <div
+                              className="error_message_checkout"
+                              style={{ color: "red", fontSize: "12px" }}
+                            >
+                              {error}
+                            </div>
+                          )}
+                        </div>
+                        <div className="form-field">
+                          <select
+                            id="divisionelect"
+                            className="form-control"
+                            value={selectArea}
+                            onChange={(e) => setSelectArea(e.target.value)}
+                            style={{
+                              borderColor:
+                                error && selectArea === "" ? "red" : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
                           >
-                            {error}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-field">
-                        <select
-                          id="divisionelect"
-                          className="form-control"
-                          onChange={handleDistrictChange}
-                          style={{
-                            borderColor:
-                              error && formData.district === ""
-                                ? "red"
-                                : "#ccc",
-                            border: "1px solid #ccc",
-                          }}
-                        >
-                          {formData.division === "" && (
-                            <option>Select a district...</option>
-                          )}
-                          {filterDistrictData.map((item) =>
-                            item.map((dis) => (
-                              <option value={dis.id}>{dis.name}</option>
-                            ))
-                          )}
-                        </select>
-                        {error && formData.district === "" && (
-                          <div
-                            className="error_message_checkout"
-                            style={{ color: "red", fontSize: "12px" }}
+                            <option value="" disabled>
+                              Select Delivery Area...
+                            </option>
+                            {deliveryData &&
+                              deliveryData.map((item, index) => (
+                                <option key={index} value={`${item.address}`}>
+                                  {item.address}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                        {/* <div className="form-field">
+                          <select
+                            id="divisionelect"
+                            className="form-control"
+                            value={selectedDiviison}
+                            onChange={handleDivisionChange}
+                            style={{
+                              borderColor:
+                                error && formData.division === ""
+                                  ? "red"
+                                  : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
                           >
-                            {error}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-field">
-                        <select
-                          id="divisionelect"
-                          className="form-control"
-                          onChange={handleUpzilaChange}
-                          style={{
-                            borderColor:
-                              error && formData.upazila === "" ? "red" : "#ccc",
-                            border: "1px solid #ccc",
-                          }}
-                        >
-                          {formData.district === "" && (
-                            <option>Select a Upazila...</option>
-                          )}
-                          {filterUpzilaData &&
-                            filterUpzilaData.map((item) =>
-                              item.map((dis) => (
-                                <option value={dis.id}>{dis.name}</option>
+                            <option value="" disabled>
+                              Select a Divsion...
+                            </option>
+                            {division.map((item, index) =>
+                              item.data.map((div) => (
+                                <option key={index} value={`${div.id}`}>
+                                  {div.name}
+                                </option>
                               ))
                             )}
-                        </select>
-                        {error && formData.upazila === "" && (
-                          <div
-                            className="error_message_checkout"
-                            style={{ color: "red", fontSize: "12px" }}
+                          </select>
+                          {error && formData.division === "" && (
+                            <div
+                              className="error_message_checkout"
+                              style={{ color: "red", fontSize: "12px" }}
+                            >
+                              {error}
+                            </div>
+                          )}
+                        </div>
+                        <div className="form-field">
+                          <select
+                            id="divisionelect"
+                            className="form-control"
+                            onChange={handleDistrictChange}
+                            style={{
+                              borderColor:
+                                error && formData.district === ""
+                                  ? "red"
+                                  : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
                           >
-                            {error}
-                          </div>
-                        )}
-                      </div>
-                      <div className="form-field">
-                        <input
-                          required
-                          className="form-control"
-                          type="text"
-                          name="address"
-                          placeholder="address.."
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              address: e.target.value,
-                            })
-                          }
-                          style={{
-                            borderColor:
-                              error && formData.address === "" ? "red" : "#ccc",
-                            border: "1px solid #ccc",
-                          }}
-                        />
-                        {error && formData.address === "" && (
-                          <div
-                            className="error_message_checkout"
-                            style={{ color: "red", fontSize: "12px" }}
-                          >
-                            {error}
-                          </div>
-                        )}
-                      </div>
+                            <option>Select a district...</option>
 
-                      <hr />
-                      {showButton && (
-                        <input
-                          id="form-button"
-                          className="btn btn-success btn-block responsive_submit_button"
-                          value="Place Order"
-                          type="button"
-                          onClick={handlesubmit}
-                        />
-                      )}
-                    </form>
+                            {filterDistrictData.map((item, index) =>
+                              item.map((dis) => (
+                                <option value={dis.id} key={index}>
+                                  {dis.name}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                          {error && formData.district === "" && (
+                            <div
+                              className="error_message_checkout"
+                              style={{ color: "red", fontSize: "12px" }}
+                            >
+                              {error}
+                            </div>
+                          )}
+                        </div>
+                        <div className="form-field">
+                          <select
+                            id="divisionelect"
+                            className="form-control"
+                            onChange={handleUpzilaChange}
+                            style={{
+                              borderColor:
+                                error && formData.upazila === ""
+                                  ? "red"
+                                  : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
+                          >
+                            <option>Select a Upazila...</option>
+
+                            {filterUpzilaData &&
+                              filterUpzilaData.map((item, index) =>
+                                item.map((dis) => (
+                                  <option value={dis.id} key={index}>
+                                    {dis.name}
+                                  </option>
+                                ))
+                              )}
+                          </select>
+                          {error && formData.upazila === "" && (
+                            <div
+                              className="error_message_checkout"
+                              style={{ color: "red", fontSize: "12px" }}
+                            >
+                              {error}
+                            </div>
+                          )}
+                        </div> */}
+                        <div className="form-field">
+                          <input
+                            required
+                            className="form-control"
+                            type="text"
+                            name="address"
+                            placeholder="address.."
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                address: e.target.value,
+                              })
+                            }
+                            style={{
+                              borderColor:
+                                error && formData.address === ""
+                                  ? "red"
+                                  : "#ccc",
+                              border: "1px solid #ccc",
+                            }}
+                          />
+                          {error && formData.address === "" && (
+                            <div
+                              className="error_message_checkout"
+                              style={{ color: "red", fontSize: "12px" }}
+                            >
+                              {error}
+                            </div>
+                          )}
+                        </div>
+
+                        <hr />
+                        {showButton &&
+                          (loading ? (
+                            <button
+                              id="form-button"
+                              className="btn btn-success btn-block responsive_submit_button "
+                            >
+                              <span className="loader_loading"></span>
+                            </button>
+                          ) : (
+                            <input
+                              id="form-button"
+                              className="btn btn-success btn-block responsive_submit_button"
+                              value="Place Order"
+                              type="button"
+                              onClick={handlesubmit}
+                            />
+                          ))}
+                      </form>
+                    </div>
                   </div>
-                </div>
 
-                <br />
+                  <br />
+                </>
                 {/* {showPaymentInfo && (
               <div className="box-element" id="payment-info">
                 <h4>Payment Options</h4>
@@ -480,10 +526,10 @@ const Checkout = React.memo(() => {
                     items.length > 0 &&
                     items.map((item) => (
                       <div className="cart-row" key={item.variant.id}>
-                        <div style={{ flex: 1.3 }}>
+                        <div style={{ flex: 2.3 }}>
                           <img
                             className="row-image"
-                            src={`http://localhost:8000${item.variant?.image.image}`}
+                            src={`${process.env.REACT_APP_ClOUD}${item.variant?.image.image}`}
                             alt={item.variant?.product.name}
                           />
                         </div>
@@ -529,9 +575,7 @@ const Checkout = React.memo(() => {
                     <span style={{ fontWeight: "bold" }}> Total Payment: </span>
                     <div>
                       <span className="bd_taka">৳</span>
-                      {cartTotal
-                        ? cartTotal + (parseInt(deliveryFee) || 120)
-                        : 0}
+                      {cartTotal ? cartTotal + (parseInt(deliveryFee) || 0) : 0}
                     </div>
                   </div>
                 </div>

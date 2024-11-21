@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import "../css/cart.css";
+import "../css/responsive.css";
 import Navbar from "./Navbar";
-import Star from "../images/star.png";
+// import Star from "../images/star.png";
 import free from "../images/3734738.png";
 import Location from "../images/location.png";
 import cash from "../images/Taka.png";
@@ -14,27 +15,24 @@ import { ToastContainer, toast } from "react-toastify";
 import { FaHeart } from "react-icons/fa";
 import q from "../images/q.png";
 import a from "../images/a.png";
+import facebook from "../images/facebook.png";
+import instagram from "../images/instagram.png";
+import call from "../images/call.png";
+import Whatsup from "../images/3670051.png";
 // import Footer from './Footer';
 import ReactImageMagnify from "react-image-magnify";
 import { IoMdHome } from "react-icons/io";
 import { AiOutlineMinus } from "react-icons/ai";
 import { GoPlus } from "react-icons/go";
-import { CiSearch } from "react-icons/ci";
-import division from "../components/divisions.json";
-import district from "../components/districts.json";
-import upzila from "../components/upazilas.json";
-import { IoIosArrowBack } from "react-icons/io";
+
 const ProductDetails = () => {
   const updateUserOrder = useUpdateUserOrder();
 
   const authToken = localStorage.getItem("authToken");
   const location = useLocation();
-  const [filterDivision, setfilterDivision] = useState([]);
-  const [selectedDiviison, setSelectedDivision] = useState("");
-  const [divisName, setDivisioName] = useState("");
-  const [districtName, setDistrictName] = useState("");
-  const [selecteDistrict, setSelectedDistrict] = useState("");
-  const [upzaila_name, setUpzailaName] = useState("");
+  const [filterDivision, setfilterDivision] = useState("Inside of Dhaka");
+  const [products, setProducts] = useState([]);
+
   const queryParams = new URLSearchParams(location.search);
   const productId = queryParams.get("productId");
   const [cartitems, setCartItems] = useState("");
@@ -57,17 +55,63 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(false);
   const [quantity, setquantity] = useState(null);
   const [discountPrice, setDiscountprice] = useState(null);
+  const [productPrice, setProductPrice] = useState(null);
   const [deliveryData, setDeliveryData] = useState([]);
+  const [stockData, setStockData] = useState([]);
+  const [variantData, setVarinatData] = useState([]);
   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchproductid = async () => {
+      try {
+        setLoading(true);
+        if (!productId) {
+          console.error("ProductId is undefined");
+          return;
+        }
+
+        const response = await fetch(
+          `${process.env.REACT_APP_API_KEY}/api/get-product-id/${productId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const { product, variants, delivery, related_product, stock } = data;
+        setDeliveryData(delivery);
+        setProduct(product);
+        setVariant(variants);
+        setStockData(stock);
+        // eslint-disable-next-line eqeqeq
+        const filter = related_product.filter((data) => data.id != productId);
+        setProducts(filter);
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchproductid();
+  }, [productId]);
 
   const cartitemsdata = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/cart-items/", {
-        headers: {
-          "Content-type": "application/json",
-          Authorization: `Token ${authToken}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/cart-items/`,
+        {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: `Token ${authToken}`,
+          },
+        }
+      );
       const data = await response.json();
 
       const { cartItems, delivery } = data;
@@ -80,7 +124,7 @@ const ProductDetails = () => {
   const fetchWishListProduct = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/wishListProduct/getAll/",
+        `${process.env.REACT_APP_API_KEY}/api/wishListProduct/getAll/`,
         {
           headers: {
             "Content-type": "application/json",
@@ -99,7 +143,7 @@ const ProductDetails = () => {
   const fetchQuestionAnswerData = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/question/answer/getAll/",
+        `${process.env.REACT_APP_API_KEY}/api/question/answer/getAll/`,
         {
           headers: {
             "Content-type": "application/json",
@@ -115,19 +159,34 @@ const ProductDetails = () => {
       console.error("Error fetching data:", error);
     }
   };
+  const fetchVarintData = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_KEY}/api/get-products/`
+      );
+      const data = await response.json();
+      const { variant } = data;
+
+      setVarinatData(variant);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
   useEffect(() => {
     if (authToken) {
       cartitemsdata();
       fetchWishListProduct();
     }
+    fetchVarintData();
     fetchQuestionAnswerData();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAdd = async (action) => {
     if (!authToken) {
-      navigate("/login");
+      handleLoginRedirect();
     } else {
       if (!imageId && !clikedsize) {
         toast.warning("Please Select Size and Color");
@@ -155,45 +214,6 @@ const ProductDetails = () => {
       }
     }
   };
-
-  useEffect(() => {
-    const fetchproductid = async () => {
-      try {
-        setLoading(true);
-        if (!productId) {
-          console.error("ProductId is undefined");
-          return;
-        }
-
-        const response = await fetch(
-          `http://127.0.0.1:8000/api/get-product-id/${productId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        const { product, variants } = data;
-
-        setProduct(product);
-        setVariant(variants);
-        setInterval(() => {
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchproductid();
-  }, [productId]);
 
   const handleImageChange = (product, index) => {
     setHoveredImage(product.image?.image);
@@ -225,7 +245,7 @@ const ProductDetails = () => {
       setClickedImage(productVariant[0].image.image);
       setClikedsize(productVariant[0]?.size?.name);
       setImageId(productVariant[0].image?.id);
-
+      setProductPrice(productVariant[0]?.price);
       if (productVariant[0].image?.color?.name === null) setClikedColor(1);
       else {
         setColorNmae(productVariant[0].image?.color?.name);
@@ -271,18 +291,29 @@ const ProductDetails = () => {
           ? data.image?.id === imageId && data.size?.name === clikedsize
           : data.image?.id === imageId
       );
+
+    const filterStock = stockData.find(
+      (item) => item.variation?.id === filterVariant?.id
+    );
+
+    setProductPrice(filterVariant?.price);
     setVariantId(filterVariant?.id);
-    setquantity(filterVariant?.quantity);
-  }, [clikedsize, imageId, productVariant]);
+    setquantity(filterStock?.quantity);
+  }, [clikedsize, imageId, productVariant, stockData]);
 
   const [filled, setFilled] = useState(false);
   const [filledID, setFilledID] = useState(null);
 
   const handleSaveWishlist = async () => {
+    if (!authToken) {
+      handleLoginRedirect();
+
+      return;
+    }
     setFilled(true);
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/watchlist/product/save/`,
+        `${process.env.REACT_APP_API_KEY}/api/watchlist/product/save/`,
         {
           method: "post",
           headers: {
@@ -324,6 +355,7 @@ const ProductDetails = () => {
 
   const handleLoginRedirect = () => {
     sessionStorage.setItem("redirectFrom", location.pathname + location.search);
+    navigate("/login");
   };
 
   const handleSaveQuestion = async () => {
@@ -331,7 +363,7 @@ const ProductDetails = () => {
     const localDateTime = today.toISOString();
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/question/answer/save/ ",
+        `${process.env.REACT_APP_API_KEY}/api/question/answer/save/`,
         {
           method: "POST",
           headers: {
@@ -376,60 +408,12 @@ const ProductDetails = () => {
   useEffect(() => {
     if (product?.discount) {
       const discountAmount =
-        (parseFloat(product?.price) * parseFloat(product?.discount)) / 100;
-      const discountedPrice = product?.price - discountAmount;
+        (parseFloat(productPrice) * parseFloat(product?.discount)) / 100;
+      const discountedPrice = productPrice - discountAmount;
       setDiscountprice(Math.round(discountedPrice));
     }
-  }, [product.discount, product.price]);
+  }, [product?.discount, productPrice]);
 
-  const [deliveryAddress, setDeliverAddress] = useState(false);
-
-  const handledeliveryAddress = () => {
-    setDeliverAddress(!deliveryAddress);
-  };
-  const handleDivisionSearch = (e) => {
-    const divisionName = e.target.value;
-
-    const filter = division.map((data) =>
-      data.data.filter((item) =>
-        item.name.toLowerCase().includes(divisionName.toLowerCase())
-      )
-    );
-
-    setfilterDivision(filter);
-  };
-
-  const handleFilterDistrict = (id) => {
-    if (!divisName) {
-      const filterDistrict = district.map((data) =>
-        data.data.filter((item) => item.division_id.includes(id))
-      );
-      const filter = division.map((data) =>
-        data.data.find((item) => item.id.includes(id))
-      );
-      console.log(filter[0].name);
-      setDivisioName(filter[0].name);
-      setfilterDivision(filterDistrict);
-    } else if (!districtName) {
-      const filterDistrict = upzila.map((data) =>
-        data.data.filter((item) => item.district_id.includes(id))
-      );
-      const filter = district.map((data) =>
-        data.data.find((item) => item.id.includes(id))
-      );
-      console.log(filter[0].name);
-      setDistrictName(filter[0].name);
-      setfilterDivision(filterDistrict);
-    } else {
-      const filterDistrict = upzila.map((data) =>
-        data.data.find((item) => item.id.includes(id))
-      );
-      console.log(filterDistrict[0].name);
-      setfilterDivision([]);
-      setUpzailaName(filterDistrict[0].name);
-      setDeliverAddress(false);
-    }
-  };
   const formatDateRange = (startDate, endDate) => {
     const options = { month: "short", day: "numeric" };
     const start = startDate.toLocaleDateString("en-US", options);
@@ -450,21 +434,28 @@ const ProductDetails = () => {
   const [range, setRange] = useState(null);
 
   useEffect(() => {
-    if (divisName) {
-      const delivery_fee =
-        deliveryData && deliveryData.find((data) => data.address === divisName);
-      setDeliveryFee(delivery_fee);
-      setRange(calculateDateRange(delivery_fee?.duration));
-    } else {
-      const delivery_fee =
-        deliveryData &&
-        deliveryData.find((data) => data.address === "Barishal");
-      setDeliveryFee(delivery_fee);
-      setRange(calculateDateRange(delivery_fee?.duration));
-      console.log(delivery_fee);
-    }
-  }, [deliveryData, divisName]);
+    const delivery_fee =
+      deliveryData &&
+      deliveryData.find((data) => data.address === filterDivision);
+    setDeliveryFee(delivery_fee);
+    setRange(calculateDateRange(delivery_fee?.duration));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deliveryData, filterDivision]);
 
+  const calculateDiscount = (product) => {
+    if (product.discount) {
+      const price = handlePrice(product.id);
+      const discountAmount =
+        (parseFloat(price) * parseFloat(product?.discount)) / 100;
+      const discountedPrice = price - discountAmount;
+      return Math.round(discountedPrice);
+    }
+  };
+  const handlePrice = (id) => {
+    const data = variantData.filter((item) => item.product?.id == 4);
+    console.log(data);
+    return data[0]?.price;
+  };
   return (
     <>
       <div className="sub_page">
@@ -482,7 +473,7 @@ const ProductDetails = () => {
                   ) : (
                     <div className="img-boxx">
                       <img
-                        src={`http://localhost:8000${
+                        src={`${process.env.REACT_APP_ClOUD}${
                           hoveredImage || clickedImage || image
                         }`}
                         alt={product.name}
@@ -490,23 +481,20 @@ const ProductDetails = () => {
                       />
 
                       {/* <ReactImageMagnify
-                        className="preview_image"
+                       
                         {...{
                           smallImage: {
                             alt: product.name,
                             isFluidWidth: true,
-                            src: `http://localhost:8000${
+                            src: `${process.env.REACT_APP_ClOUD}${
                               hoveredImage || clickedImage || image
                             }`,
-                            
-                            width: "200%",
                           },
                           largeImage: {
-                            src: `http://localhost:8000${
+                            src: `${process.env.REACT_APP_ClOUD}${
                               hoveredImage || clickedImage || image
                             }`,
-                            sizes: 15000,
-                            width: 1800,
+                            width: 100%,
                             height: 1800,
                           },
                           enlargedImageContainerDimensions: {
@@ -523,6 +511,49 @@ const ProductDetails = () => {
                       <span class="loader2"></span>
                     ) : (
                       <>
+                        <div className="samll_image_product d-mdx-none d-lg-none">
+                          {productVariant &&
+                            productVariant
+                              .filter(
+                                (item, index, self) =>
+                                  index ===
+                                  self.findIndex(
+                                    (v) => v.image?.id === item.image?.id
+                                  ) // Ensure each image ID is unique
+                              )
+                              .map((item, index) => (
+                                <div
+                                  className={`image-wrap-color ${
+                                    clickedImage === item.image?.image
+                                      ? "clicked"
+                                      : ""
+                                  }`}
+                                  key={index}
+                                  onMouseMove={() =>
+                                    handleImageChange(item, index)
+                                  }
+                                  onMouseLeave={handleMouseLeave}
+                                  onClick={() => handleImageClick(item, index)}
+                                >
+                                  <div className="image-layout">
+                                    <img
+                                      src={`${process.env.REACT_APP_ClOUD}${item.image?.image}`}
+                                      style={{ width: "100%", height: "100%" }}
+                                      alt={product}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                        </div>
+                        <div className="variation-prop-color d-lg-none">
+                          <div>{productVariant.length} Colors available</div>
+                          <div>
+                            {color ||
+                              clikedcolor ||
+                              colorname ||
+                              productVariant[0]?.color?.name}
+                          </div>
+                        </div>
                         <div className="product_header_details_section">
                           {product.name}
                         </div>
@@ -560,7 +591,7 @@ const ProductDetails = () => {
                                 }`,
                               }}
                             >
-                              Material :{product.material}
+                              Material : {product.material?.name}
                             </div>
                           </div>
                         </div>
@@ -591,28 +622,31 @@ const ProductDetails = () => {
                               marginLeft: ".4vw",
                             }}
                           >
-                            {discountPrice || product.price}
+                            {discountPrice || productPrice}
                           </span>
                           {discountPrice && (
                             <div class="origin-block">
                               <span
-                                class=" pdp-price pdp-price_type_deleted pdp-price_color_lightgray pdp-price_size_xs"
+                                className=" pdp-price pdp-price_type_deleted pdp-price_color_lightgray pdp-price_size_xs"
                                 data-spm-anchor-id="a2a0e.pdp.0.i4.65f77c46EDlqep"
                               >
-                                ৳ {product.price}
+                                ৳ {productPrice}
                               </span>
-                              <span class="product-price__discount">
+                              <span className="product-price__discount">
                                 -{product.discount}%
                               </span>
                             </div>
                           )}
                         </div>
 
-                        {productVariant && productVariant.length > 0 && (
+                        {productVariant && productVariant[0]?.size?.name && (
                           <div className="size_product">
                             <div>
                               Size
-                              <span style={{ marginLeft: "4.8vw" }}>
+                              <span
+                                className="mll-2"
+                                style={{ marginLeft: "4.8vw" }}
+                              >
                                 {hoversize ||
                                   clikedsize ||
                                   productVariant[0].size?.name}
@@ -645,7 +679,10 @@ const ProductDetails = () => {
                           {productVariant && (
                             <div className="color_title">
                               Color Family
-                              <span style={{ marginLeft: ".7rem" }}>
+                              <span
+                                className="mll-1"
+                                style={{ marginLeft: ".7rem" }}
+                              >
                                 {color ||
                                   clikedcolor ||
                                   colorname ||
@@ -654,31 +691,45 @@ const ProductDetails = () => {
                             </div>
                           )}
 
-                          <div className="samll_image_product">
+                          <div className="samll_image_product d-none d-lg-block d-mdx-block">
                             {productVariant &&
-                              productVariant.map((item, index) => (
-                                <div
-                                  className={`image-wrap-color ${
-                                    clickedImage === item.image?.image
-                                      ? "clicked"
-                                      : ""
-                                  }`}
-                                  key={index}
-                                  onMouseMove={() =>
-                                    handleImageChange(item, index)
-                                  }
-                                  onMouseLeave={handleMouseLeave}
-                                  onClick={() => handleImageClick(item, index)}
-                                >
-                                  <div className="image-layout">
-                                    <img
-                                      src={`http://localhost:8000${item.image?.image}`}
-                                      style={{ width: "100%", height: "100%" }}
-                                      alt={product}
-                                    />
+                              // Filter out duplicate images by image.id
+                              productVariant
+                                .filter(
+                                  (item, index, self) =>
+                                    index ===
+                                    self.findIndex(
+                                      (v) => v.image?.id === item.image?.id
+                                    ) // Ensure each image ID is unique
+                                )
+                                .map((item, index) => (
+                                  <div
+                                    className={`image-wrap-color ${
+                                      clickedImage === item.image?.image
+                                        ? "clicked"
+                                        : ""
+                                    }`}
+                                    key={index}
+                                    onMouseMove={() =>
+                                      handleImageChange(item, index)
+                                    }
+                                    onMouseLeave={handleMouseLeave}
+                                    onClick={() =>
+                                      handleImageClick(item, index)
+                                    }
+                                  >
+                                    <div className="image-layout">
+                                      <img
+                                        src={`${process.env.REACT_APP_ClOUD}${item.image?.image}`}
+                                        style={{
+                                          width: "100%",
+                                          height: "100%",
+                                        }}
+                                        alt={product}
+                                      />
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
                           </div>
                         </div>
                       </>
@@ -755,74 +806,17 @@ const ProductDetails = () => {
                             alt=""
                           />
                           <div className="delivery_address">
-                            <span className="address_name">
-                              {divisName || "Barishal"},{" "}
-                              {districtName || "Barishal"},{" "}
-                              {upzaila_name || "Barishla Sadar"}
-                            </span>
-                            <button onClick={handledeliveryAddress}>
-                              Change
-                            </button>
-                            {deliveryAddress && (
-                              <div className="open_delivery_modal">
-                                <div>
-                                  <span className="">
-                                    {divisName && (
-                                      <>
-                                        <span> {divisName} </span>
-                                        <IoIosArrowBack size={22} />
-                                      </>
-                                    )}
-                                    {districtName && (
-                                      <>
-                                        <span> {districtName} </span>
-                                        <IoIosArrowBack size={22} />
-                                      </>
-                                    )}
-                                  </span>{" "}
-                                  Selected Address
-                                </div>
-                                <div className="location_search">
-                                  <input
-                                    type="text"
-                                    placeholder="Select Address"
-                                    onChange={handleDivisionSearch}
-                                  />
-                                  <CiSearch size={20} />
-                                </div>
-                                <div className="location-level__main">
-                                  {filterDivision.length > 0
-                                    ? filterDivision.map((item, index) =>
-                                        item.map((div, innerIndex) => (
-                                          <div
-                                            className="delivery_item"
-                                            key={innerIndex} // Use innerIndex as key since it's unique within the map
-                                            value={`${item.name}`}
-                                            onClick={() =>
-                                              handleFilterDistrict(div.id)
-                                            }
-                                          >
-                                            {div.name}
-                                          </div>
-                                        ))
-                                      )
-                                    : division.map((item, index) =>
-                                        item.data.map((div, innerIndex) => (
-                                          <div
-                                            className="delivery_item"
-                                            key={innerIndex} // Use innerIndex as key since it's unique within the map
-                                            value={`${div.name}`}
-                                            onClick={() =>
-                                              handleFilterDistrict(div.id)
-                                            }
-                                          >
-                                            {div.name}
-                                          </div>
-                                        ))
-                                      )}
-                                </div>
-                              </div>
-                            )}
+                            <select
+                              onChange={(e) =>
+                                setfilterDivision(e.target.value)
+                              }
+                              value={filterDivision}
+                            >
+                              <option value="">Select Delivery Area</option>
+                              {deliveryData.map((data, index) => (
+                                <option key={index}>{data.address}</option>
+                              ))}
+                            </select>
                           </div>
                         </div>
                       </div>
@@ -853,7 +847,10 @@ const ProductDetails = () => {
                             gap: "12.1vw",
                           }}
                         >
-                          <div style={{ fontSize: ".8vw", color: "#9e9e9e" }}>
+                          <div
+                            className="font_2"
+                            style={{ fontSize: ".8vw", color: "#9e9e9e" }}
+                          >
                             1-{deliveryfee?.duration} days
                           </div>
                           <div>৳ {deliveryfee?.fee}</div>
@@ -886,20 +883,89 @@ const ProductDetails = () => {
                         <hr />
                       </div>
 
-                      <div className="pdf_seller_info">
-                        <div className="pdf_seller_option">
-                          <div>Ship on Time</div>
-                          <div className="pdf_seller_rating">100%</div>
-                        </div>
-                        <div className="pdf_seller_option">
-                          <div>Chat Response Rate</div>
-                          <div className="pdf_seller_rating">100%</div>
+                      <div className="contact_list">
+                        <div>Contact Us</div>
+                        <div className="contact_item">
+                          <a
+                            href="https://www.facebook.com/tannifashionhouse"
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <img src={facebook} width={24} alt="" />
+                          </a>
+                          <Link>
+                            <img src={Whatsup} width={24} alt="" />
+                          </Link>
+                          <a href="tel:+8801829674786">
+                            <img src={call} width={24} alt="" />
+                          </a>
+                          <Link>
+                            <img src={instagram} width={24} alt="" />
+                          </Link>
                         </div>
                       </div>
                     </>
                   )}
                 </div>
-
+                <div className="responsive_delivery_details">
+                  <div className="Delivery">
+                    <div className="pdp-list-item-label">Delivery</div>
+                    <div
+                      className="pdp-delivery-item"
+                      style={{ display: "flex", flexDirection: "column" }}
+                    >
+                      <div className="delivery_address">
+                        <select
+                          onChange={(e) => setfilterDivision(e.target.value)}
+                          value={filterDivision}
+                        >
+                          <option value="">Select Delivery Area</option>
+                          {deliveryData.map((data, index) => (
+                            <option key={index}>{data.address}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        Standard Delivery , {range} ৳ {deliveryfee?.fee}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="Delivery align-items-center">
+                    <div className="pdp-list-item-label">Services</div>
+                    <div
+                      className="pdp-delivery-item "
+                      style={{ display: "flex", flexDirection: "column" }}
+                    >
+                      <div className=" service_item d-flex align-items-center">
+                        <img src={warranty} width={15} height={15} alt="" />
+                        <span className="delivery_serivice_option">
+                          Warranty not avilable
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex ">
+                    <div className="pdp-list-item-label">Contact Us</div>
+                    <div className="contact_item ml-5">
+                      <a
+                        href="https://www.facebook.com/tannifashionhouse"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <img src={facebook} width={24} alt="" />
+                      </a>
+                      <Link>
+                        <img src={Whatsup} width={24} alt="" />
+                      </Link>
+                      <a href="tel:+8801829674786">
+                        <img src={call} width={24} alt="" />
+                      </a>
+                      <Link>
+                        <img src={instagram} width={24} alt="" />
+                      </Link>
+                    </div>
+                  </div>
+                </div>
                 <br />
               </div>
               <div className="single_product_nav">
@@ -918,7 +984,10 @@ const ProductDetails = () => {
               </div>
               <div className="product_description_section">
                 {desVisible ? (
-                  <div dangerouslySetInnerHTML={{ __html: product.details }} />
+                  <div
+                    className="product_description_body"
+                    dangerouslySetInnerHTML={{ __html: product.details }}
+                  />
                 ) : (
                   <div>
                     <ul>
@@ -927,7 +996,7 @@ const ProductDetails = () => {
                         Click
                         <span style={{ fontWeight: "bold", marginLeft: "5px" }}>
                           Add To Cart
-                        </span>{" "}
+                        </span>
                         Button
                       </li>
                       <li>
@@ -960,11 +1029,19 @@ const ProductDetails = () => {
                     </>
                   ) : (
                     <div>
-                      <Link onClick={() => handleLoginRedirect()} to={"/login"}>
+                      <Link
+                        style={{ color: "#6610f2" }}
+                        onClick={() => handleLoginRedirect()}
+                        to={"/login"}
+                      >
                         Login
+                      </Link>
+                      <span style={{ marginLeft: "4px" }}>or</span>
+                      <Link to={"/signup"} style={{ color: "#6610f2" }}>
+                        {" "}
+                        Register
                       </Link>{" "}
-                      or <Link to={"/signup"}> Register</Link> to ask questions
-                      to seller
+                      to ask questions to seller
                     </div>
                   )}
                 </div>
@@ -977,7 +1054,7 @@ const ProductDetails = () => {
                         <div className="qna-title">
                           {data.question}
                           <p className="qna-meta">
-                            {data.user?.username} -{" "}
+                            {data.user?.username} -
                             <span>{convertLocatime(data.createAt)}</span>
                           </p>
                         </div>
@@ -996,6 +1073,64 @@ const ProductDetails = () => {
                     </div>
                   ))}
               </div>
+              <div className="related_product">
+                {products.length > 0 && <h4>Related Product</h4>}
+                <div className="main_box">
+                  {products &&
+                    products.map((product) => (
+                      <a
+                        key={product.id}
+                        style={{ textDecoration: "none", color: "black" }}
+                        href={`/products/${encodeURIComponent(
+                          product.name
+                        )}?productId=${product.id}`}
+                      >
+                        <div className="box">
+                          <div className="img-box">
+                            <img
+                              src={`${process.env.REACT_APP_ClOUD}${product.cover_image}?amp=1`}
+                              alt={product.name}
+                            />
+                          </div>
+
+                          <div className="detail-box">
+                            <div className="title">{product.name}</div>
+                            <div className="price_item">
+                              <span
+                                className="bdt_taka"
+                                style={{ fontSize: "1.5vw" }}
+                              >
+                                ৳
+                              </span>
+                              {calculateDiscount(product) ||
+                                handlePrice(product.id)}
+                              {product.discount && (
+                                <span class="origin-block ml-3">
+                                  <span class="  pdp-price_type_deleted pdp-price_color_lightgray item-price-original">
+                                    <span
+                                      className="currency"
+                                      style={{ fontSize: "1.1vw" }}
+                                    >
+                                      ৳
+                                    </span>{" "}
+                                    {handlePrice(product.id)}
+                                  </span>
+                                </span>
+                              )}
+                            </div>
+
+                            <div>
+                              <button className="order-now-button">
+                                Order Now
+                              </button>
+                            </div>
+                          </div>
+                          {/* {product.discount? <div className="discount_product">-{product.discount}%</div>: ""}   */}
+                        </div>
+                      </a>
+                    ))}
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -1003,7 +1138,7 @@ const ProductDetails = () => {
       <div className="option_container_responsive">
         <div className="home_icon">
           <div className="icon_flex">
-            <IoMdHome size={25} color="#333" />{" "}
+            <IoMdHome size={25} color="#333" />
             <Link className="responsive_icon" to={"/"}>
               Home
             </Link>
@@ -1014,20 +1149,22 @@ const ProductDetails = () => {
               color="#333"
               className="cart_icon_postion mt-1"
             />
-            <Link className="responsive_icon " to={"/cart"}>
+            <Link className="responsive_icon " to={"/account/my-wishlist"}>
               Wishlist
             </Link>
             <span className="cart_total ">{wishlistData.length || 0}</span>
           </div>
         </div>
         <div className="add_to_cart_section">
-          <button onClick={() => handleAdd("add")}>Add to cart</button>
+          <button onClick={() => handleAdd("add")}>
+            <span className="pdp-mod-sbutton-inner">Add to cart</span>{" "}
+          </button>
           <span className="color_option">
             <Link
               onClick={() => handleAdd("add")}
               to={authToken ? "/checkout" : "/login"}
             >
-              <span className="pdp-mod-sbutton-inner">Buy Now</span>{" "}
+              <span className="pdp-mod-sbutton-inner">Buy Now</span>
             </Link>
           </span>
         </div>

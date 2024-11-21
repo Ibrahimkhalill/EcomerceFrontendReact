@@ -30,7 +30,7 @@ const Carousel = ({ subcategories }) => {
           <button
             key={index}
             style={{ outline: "none" }}
-            onClick={() => handleSubcategoryClick(subcategory)}
+            
           >
             <div className="subcategory_item_category">
               <div className="img_box_category">
