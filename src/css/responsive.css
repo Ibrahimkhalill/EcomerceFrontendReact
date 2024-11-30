@@ -559,17 +559,18 @@
   }
   .responsive_delivery_details .Delivery {
     display: flex;
-
     width: 100%;
-    column-gap: 69px;
+    column-gap: 50px;
   }
   .responsive_delivery_details .delivery_address {
     width: 100% !important;
+    
   }
   .responsive_delivery_details .delivery_address select {
     width: 100% !important;
     color: #000;
-    font-style: italic;
+    font-size: 13px;
+
   }
   .add_to_cart_section {
     display: flex;

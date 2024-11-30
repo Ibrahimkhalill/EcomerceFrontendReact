@@ -925,8 +925,10 @@ const ProductDetails = () => {
                           ))}
                         </select>
                       </div>
-                      <div>
-                        Standard Delivery , {range} ৳ {deliveryfee?.fee}
+                      <div className="aty">
+                        Delivery , {range}{" "}
+                        <span style={{ fontSize: "18px" }}>৳</span>{" "}
+                        {deliveryfee?.fee}
                       </div>
                     </div>
                   </div>
@@ -946,7 +948,7 @@ const ProductDetails = () => {
                   </div>
                   <div className="d-flex ">
                     <div className="pdp-list-item-label">Contact Us</div>
-                    <div className="contact_item ml-5">
+                    <div className="contact_item ">
                       <a
                         href="https://www.facebook.com/tannifashionhouse"
                         target="_blank"
